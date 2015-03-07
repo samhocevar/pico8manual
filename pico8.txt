@@ -1,6 +1,6 @@
 ============================================================================================
 
- PICO-8 
+ PICO-8  v0.0.2
  http://www.pico-8.com
  (c) Copyright 2014-2015 Lexaloffle Games LLP
  
@@ -8,7 +8,7 @@
 
 ============================================================================================
 
-Welcome to PICO-8! 
+Welcome to PICO-8!
 
 	PICO-8 is a fantasy console for making, sharing and playing tiny games and other computer 
 	programs. When you turn it on, the machine greets you with a shell for typing in Lua programs 
@@ -17,6 +17,7 @@ Welcome to PICO-8!
 	The harsh limitations of PICO-8 are carefully chosen to be fun to work with, encourage small
 	but expressive designs and hopefully to give PICO-8 cartridges their own particular look and 
 	feel.
+
 
 :: Specs
 
@@ -32,12 +33,11 @@ Welcome to PICO-8!
 
 	Built-in tools for editing programs, drawing sprites and maps, and composing sound and music.
 	Graphics functions for drawing sprites, sections of the map and geometric primitives.
+	Palette mapping for recolouring sprites at draw-time and performing screen fades.
 	Iterators and methods for managing collections of objects (e.g. game world actors)
 	Compact data format for sharing cartridges as a single .png file.
 	Pause programs, modify live data and resume them using STOP and RESUME.
-	Palette mapping for recolouring sprites at draw-time and performing screen fades.
 	Display interrupt allowing harmless infinite loops. while(true) print("pico rulz") end
-
 
 	
 :: Hello World
@@ -52,32 +52,28 @@ Welcome to PICO-8!
 	(Note: PICO-8 only displays upper-case characters -- just type normally without capslock!)
 	
 	You can build up an interactive program by using commands like this in the code editing
-	mode along with _update and _draw (see the "System" api section for more information).
-	
-	Click on the tab that looks like two brackets "()" and type or copy/paste the following:
+	mode along with two special callback function _update and _draw. For example, the following
+	program allows you to move a circle around with the cursor keys. Press escape to switch
+	to the code editor and type or copy&paste the following code:
 
-		---------------------------
-		X = 64  Y = 64
-		FUNCTION _UPDATE()
-		 IF (BTN(0)) THEN X=X-1 END
-		 IF (BTN(1)) THEN X=X+1 END
-		 IF (BTN(2)) THEN Y=Y-1 END
-		 IF (BTN(3)) THEN Y=Y+1 END
-		END
+	X = 64  Y = 64
+	FUNCTION _UPDATE()
+	 IF (BTN(0)) THEN X=X-1 END
+	 IF (BTN(1)) THEN X=X+1 END
+	 IF (BTN(2)) THEN Y=Y-1 END
+	 IF (BTN(3)) THEN Y=Y+1 END
+	END
 
-		FUNCTION _DRAW()
-		 RECTFILL(0,0,127,127,6)
-		 CIRCFILL(X,Y,7,8)
-		END
-		---------------------------
-		
-	Now press escape to return to the main console and type RUN.
-	You can move the circle left and right with the cursor keys.
-	
+	FUNCTION _DRAW()
+	 RECTFILL(0,0,127,127,6)
+	 CIRCFILL(X,Y,7,8)
+	END
+
+	Now press escape to return to the main console and type RUN to see it in action.
 	See the example cartridges for more complex programs.
 
 
-:: Example Programs
+:: Example Cartridges
 
 	API       Demonstrates most PICO-8 functions
 	SERP      Serpinsky triangle
@@ -97,7 +93,7 @@ Welcome to PICO-8!
 	RUN
 	
 	Press escape to stop the program, and once more to enter editing mode
-	Use the cursor keys for joypad and ZX or CV for buttons A & B
+	Use the cursor keys for dpad (joystick) and ZX or CV for buttons A & B
 	
 ============================================================================================
 	Editing Modes
@@ -111,34 +107,42 @@ Welcome to PICO-8!
 :: Code
 	
 	Normal text editor. Use cursors and pageup, pagedown to navigate.
-	Holf shift to select (or click and drag with mouse)
+	Hold shift to select (or click and drag with mouse)
 	CTRL-X, C, V to cut copy or paste as usual
 	No undo or search/replace yet -- sorry!
 
 :: Gfx
 
 	Click on the sprite to edit, and choose a view zoom size
-	to do: Hold control to search replace a colour
+	Hold LCONTROL to search and replace a colour
 	Click brush size to change between 1,3 and 5-pixel brush
 	Click colourful circles to toggle flags 0..5
-	f to flip
-	v to flip vertically
-	r to rotate
-	Cursor keys to shift sprite (loops)
+	Shift-drag in the navigator to select multiple sprites
+	Operations on selected sprites:
+		f to flip
+		v to flip vertically
+		r to rotate (must be square selection)
+		Cursor keys to shift sprite (loops)
+		Ctrl-C to copy
+		Ctrl-V to paste
 	
 :: Map
 
 	Place selected sprite in grid cel
-	Each cel only stores one reference (to the sprite index)
+	Each cel only stores one 8-bit values (normally used as an index into the sprite sheet)
 	Drawing to cels with y >= 32 clobbers shared data (bottom half of sprite sheet)
-
-	to do: select region / copy,paste
+	To draw multiple sprites, select from sprite navigator with shift+drag
+	To copy a block of values, use the selection tool and then stamp tool to paste
+	To pan around the map, use the pan tool or hold space
 	
 :: Sfx
 
 	Click and drag current instrument
 	Click/Right-click on SPD to decrease/increase speed (lower value means faster)
 	Space to start/stop
+	
+	Use the view mode buttons to edit the sfx's data as a graph or a tracker-style.
+	Note: only SFX 0 can not be used for music (because 0 indicates an empty pattern)
 	
 :: Music
 
@@ -147,8 +151,12 @@ Welcome to PICO-8!
 	Space to start/stop
 	
 ============================================================================================
-	LUA Primer
+	Lua Primer
 ============================================================================================
+
+Pico-8 programs are written in Lua and also run on a Lua virtual machine.
+The following is a brief summary of essential features of Lua.
+For more detailed information, see www.lua.org.
 
 :: Comments
 
@@ -156,13 +164,16 @@ Welcome to PICO-8!
 	
 :: Types and assignment
 
-	Numbers in pico-8 are all 16:16 fixed point. They can range from -32768 to 32767.
-	To express a bit-perfect value, use hex: 0x100.10 == 256.0 + (16 / 65536.0) // to implement
-	
+	Types in Lua are numbers, strings, booleans and tables;
+
 	NUM = 12/100
 	S = "THIS IS A STRING"
 	B = FALSE
-
+	T = {1,2,3}
+	
+	Numbers in pico-8 are all 16:16 fixed point. They can range from -32768 to 32767.
+	Integer values can be written in hexidecimal. e.g. 0x11 = 17.0
+	
 :: Conditionals
 
 	IF (NOT B) THEN
@@ -196,12 +207,13 @@ Welcome to PICO-8!
 
 :: Tables (Arrays and Objects)
 
-	Arrays used 1-based indexing by default
+	Arrays use 1-based indexing by default
 
 	A = {1,2,3,4}
 	A[3]=A[4]
+	FOREACH(A, PRINT) -- 1 2 4 4
 	
-	Indexes can also be strings, and expressed like member variables
+	Indexes can also be strings, and written as member variables
 	
 	B = {}
 	B.X = 2 -- is equivalent to B["X"]
@@ -210,26 +222,27 @@ Welcome to PICO-8!
 :: Iterating over tables
 
 	Works if using PICO-8's ADD() and DEL() functions to construct
-	// to do: allow mixing with arrays constructed with A = {1,2,3}
 	
 	A = {}
 	ADD(A, "hello")
 	ADD(A, "blah")
 	ADD(A, "world")
 	DEL(A, "blah")
+	PRINT(COUNT(A)) -- 2
 	
 	FOR ITEM IN ALL(A) DO PRINT(ITEM) END
 
 	-- or, equivalently:
 	FOREACH(A, PRINT)
 	
-	PRINT(COUNT(A))
+	-- also equivalently, using an anonymous function:
+	FOREACH(A, FUNCTION(I) PRINT(I) END)
 
 
 :: End-lines
 
-	end-of-line characters are irrelevant except for comments.
-	X = 1 Y = 2 PRINT(X+Y)
+	end-of-line characters have no meaning except to terminate comments.
+	X = 1 Y = 2 PRINT(X+Y) -- this line will run ok
 	
 ============================================================================================
 	API
@@ -237,9 +250,7 @@ Welcome to PICO-8!
 
 	PICO-8 is built on the Lua scripting language, but does not include the Lua standard library.
 	Instead use the following functions, which are listed with their optional parameters in square 
-	brackets. 
-	
-	For an example program that uses most of the api functions, try LOAD("API")
+	brackets. For an example program that uses most of the api functions, try LOAD("API")
 
 --------------------------------------------------------------------------------------------------------
 	System
@@ -251,43 +262,44 @@ save filename
 	load or save a cartridge
 
 run
-	run from the start of the program
+	Run from the start of the program
 
 resume
-	run from the existing cart state
+	Run from the existing cart state
 	
 reset
-	reset the machine // not implemented
+	Reset the machine // not implemented
 
 stat x
-	returns the current cpu useage (0) or memory useage (1)
+	Returns the current cpu useage (0) or memory useage (1)
 
 flip
-	flip the back buffer to screen and wait for next frame (30fps)
-	If your program 
-
-_update, _draw
-
-	These are special user-defined functions, that PICO-8 will call once per frame if
-	they are found. It is possible to manually reproduce this behaviour, but is a very
-	common top-level design pattern. It is equivalent to adding the following code to the
-	end of your program: 
+	Flip the back buffer to screen and wait for next frame (30fps)
+	Don't normally need to do this -- _draw() calls it for you.
 	
-	if (_draw ~= nil and _update ~= nil) then 
-		while (true) do
-			_update()
-			_draw() 
-			flip() 
-		end
-	end
-
-_init
-
-	This is the only other special user-definied function, and is called once on startup
-	if it exists.
+	If your program does not call flip before a frame is up, and a _draw() callback
+	is not in progress, the current contents of the back buffer are copied to screen.
+	No need to flip() if provide a _draw() callback
 
 --------------------------------------------------------------------------------------------
-	Gfx
+	Program Structure
+--------------------------------------------------------------------------------------------
+
+	There are 3 special functions that, if defined by the user, are called during program 
+	execution:
+	
+		_update()
+			called once per update at 30fps
+	
+		_draw()
+			called once per frame
+		
+		_init()
+			called once on program startup
+
+
+--------------------------------------------------------------------------------------------
+	Graphics
 --------------------------------------------------------------------------------------------
 
 	PICO-8 has a single bank of 128 8x8 sprites, plus another 128 that overlaps with the
@@ -295,16 +307,20 @@ _init
 	the sprite sheet, and can be thought of as a 128x128 pixel image.
 
 	All of PICO-8's drawing operations are subject to the current draw-state. The draw-state
-	includes a camera position (for conveniently adding an offset to all coordinates), 
-	palette mapping (for recolouring sprites), clipping rectangle, and a draw colour that 
-	can optionally be set by any relevant function but otherwise persists.
+	includes a camera position (for adding an offset to all coordinates), palette mapping 
+	(for recolouring sprites), clipping rectangle, and a draw colour that can optionally be 
+	set by any relevant function but otherwise persists.
 
 	The draw state is reset each time a program is run. This is equivalent to calling:
 	clip() camera() pal() color()
 
-	Colours from 0..15 are:
-	black dark_blue dark_purple dark_green brown dark_gray light_gray white
-	red orange yellow green blue indigo pink peach
+	Colours indexes:
+	
+	 0  black   1  dark_blue   2  dark_purple   3  dark_green  
+	 4  brown   5  dark_gray   6  light_gray    7  white
+	 8  red     9  orange     10  yellow       11  green       
+	12  blue   13  indigo     14  pink         15  peach
+
 
 clip [x y w h]
 
@@ -312,51 +328,68 @@ clip [x y w h]
 	clip() to reset
 	
 	
-pset x y [col]
-
-	Set a screen pixel to colour col
-
 pget x y
+pset x y [c]
 
-	Returns the screen pixel colour at x,y
-
-sset x y [col]
-
-	Set a sprite sheet pixel to colour col
-
+	Get or set the colour (c) of a pixel at x, y.
+	
+	
 sget x y
+sset x y [c]
 
-	Returns the sprite sheet pixel colour at x,y
+	Get or set the colour (c) of a spritesheet pixel.
+	
+	
+fget n f
+fset n f v
+
+	Get or set the value (v) of a sprite's flag
+	f is the flag index 0..7
+	v is boolean and can be true or false
+	
+	The initial state of flags 0..5 are settable in the sprite editor,
+	using the line of little colourful buttons.
+	
+	The meaning of sprite flags is up to the user, or can be used to
+	indicate which group ('layer') of sprites should be drawn by mapdraw.
+
 
 print str [x y [col]]
 
 	Print a string
 	
+	
 cursor x y
 
 	Set the cursor position and carriage return margin
+
 
 color col
 
 	Set the default color to be used by drawing functions
 	
+	
 cls
 
 	Clear the screen
+
 
 camera [x y]
 
 	Set a screen offset of -x, -y for all drawing operations
 	camera() to reset
 	
+	
 circ     x y r [col]
 circfill x y r [col]
 
 	Draw a circle or filled circle at x,y with radius r
 
+
 line x0 y0 x1 y1 [col]
 
 	draw line
+
 
 rect     x0 y0 x1 y1 [col]
 rectfill x0 y0 x1 y1 [col]
@@ -375,6 +408,7 @@ pal c0 c1 [p]
 	c0 colour index 0..15
 	c1 colour index to map to
 
+
 spr n x y [w h]
 
 	draw sprite n (0..255) at position x,y
@@ -387,6 +421,7 @@ sspr sx sy sw sh dx dy dw dh [flip]
 	stretch rectangle from sprite sheet (sx, sy, sw, sh)
 	and draw in rectangle (dx, dy, dw, dh)
 	flip=true to flip horizontally // unimplemented
+
 
 map mx my sx sy [w h [layer]]
 
@@ -403,12 +438,13 @@ a = {}
 add(a, "hello")
 add(a, "blah")
 add(a, "world")
-del(a, "blah")
+del(a, "blah") -- deletes first occurance of value in collection
 for item in all(a) do print(item) end
 foreach(a, print)
 print(count(a))
 
-
+c = {1,2,3}
+foreach(c, print)
 
 --------------------------------------------------------------------------------------------
 	Input
@@ -417,7 +453,12 @@ print(count(a))
 btn i [p]
 
 	get button i state for player p (default 0)
-	i: 0..3 left right up down  4 A 5 B
+	i: 0..5: left right up down a_button b_button
+	p: player index 0 or 1
+	
+	Default keyboard mappings to player buttons:
+		player 0: cursors, Z,X/C,V/N,M
+		player 1: ESDF, LSHIFT,A/TAB,Q
 
 --------------------------------------------------------------------------------------------
 	Audio
@@ -427,7 +468,7 @@ sound n [channel [offset]]
 
 	play sfx n on channel from note offset
 	n -1 to stop sound on that channel
-	channel -1 to request a free channel
+	channel -1 to automatically choose a channel
 	offset in notes (0..31)
 
 music [n [fade_len]]
@@ -436,19 +477,17 @@ music [n [fade_len]]
 	p -1 to stop music
 	fade_len in ms (default: 0)
 
+
 --------------------------------------------------------------------------------------------------------
 	Map
 --------------------------------------------------------------------------------------------------------
-mset x y v
-
-	set map value at x,y to v
 
 mget x y
+mset x y v
 
-	returns map value at x, y
+	get or set map value (v) at x,y
 
-fget x
-fset x v
+
 
 mapdraw cel_x cel_y screen_x screen_y cel_w cel_h [layer]
 
@@ -468,7 +507,7 @@ mapdraw cel_x cel_y screen_x screen_y cel_w cel_h [layer]
 PICO-8 has 3 types of memory:
 
 	1. core ram (32k): screen, state data, extra data. Access with peek() poke() memcpy()
-	2. cart rom: same layout as 1 until 0x4300. Copy to core ram with reload()
+	2. cart rom: same layout as 1 until 0x4300. Copy from cart to core ram with reload()
 	3. lua memory (256k): compiled program + variables. Pay no attention to the man behind the curtain.
 
 Core ram memory layout
@@ -476,9 +515,9 @@ Core ram memory layout
 	0x1000 gfx2/map2 (shared)
 	0x2000 map
 	0x3000 gfx_props
-	0x3100 sfx
-	0x4200 song
-	0x4300 extra // use for anything
+	0x3100 song
+	0x3200 sfx
+	0x4300 user-defined
 	0x5f00 draw state [,cart data] (1024 bytes incl. unused)
 	0x6000 screen (8k)
 	
@@ -490,8 +529,6 @@ poke addr val
 	Read and write one byte to an address in core ram.
 	Legal addresses are 0x0..0x7fff
 	Reading or writing outside causes a fault
-	
-	// to do: implement sound data and draw state memory mapping
 
 memcpy dest_addr source_addr len
 
@@ -511,7 +548,7 @@ cstore dest_addr source_addr len
 memset dest_addr val len
 
 	Set len bytes to val
-	(quite fast -- can use to draw horizonal scanlines etc)
+	(quite fast -- can use to draw unclipped horizonal scanlines etc)
 	
 
 --------------------------------------------------------------------------------------------------------
@@ -537,12 +574,37 @@ sin x
 
 abs x
 	Returns the absolute (positive) value of x
-	
-band x y
-bor  x y
-bxor x y
-shl  x y
-shr  x y
-	Binary operations
+
+
+------------------------------------------------------------------------------------------------------------
+ALPHA HISTORY
+
+v0.0.3
+
+Added: Palette mapping type 1 (on display)
+Added: Collections can be initialized with c={1,2,..}
+Added: holdframe()
+
+
+v0.0.2
+
+Added: Command history
+Added: P2 keys
+Added: Boot sequence
+Added: Windows, 64-bit linux builds
+Added: CPU cost of internal api functions
+Added: Separate song channel index and mute status
+Added: Memory mapping
+Added: Search/replace colour in sprite editor
+Added: Copy/paste sprites and map regions
+Improved: Immediate mode command editing
+Improved: Editor cursor behaviour
+Fixed: Automatic audio channel selection
+
+
+v0.0.1 
+
+First Alpha
+
 
 
