@@ -1,9 +1,11 @@
 ============================================================================================
 
- PICO-8  v0.0.2
+ PICO-8  v0.0.3
  http://www.pico-8.com
  (c) Copyright 2014-2015 Lexaloffle Games LLP
- 
+ Alpha version; please do not distribute!
+ Author: joseph@lexaloffle.com
+  
  User Manual // WIP!
 
 ============================================================================================
@@ -102,7 +104,8 @@ Welcome to PICO-8!
 	Note: no undo implemented yet -- be careful!
 	
 	Press escape to toggle between console and editor
-	Click editing mode tabs at top right to switch
+	Click editing mode tabs at top right to switch or press 
+
 
 :: Code
 	
@@ -111,13 +114,14 @@ Welcome to PICO-8!
 	CTRL-X, C, V to cut copy or paste as usual
 	No undo or search/replace yet -- sorry!
 
+
 :: Gfx
 
 	Click on the sprite to edit, and choose a view zoom size
 	Hold LCONTROL to search and replace a colour
 	Click brush size to change between 1,3 and 5-pixel brush
-	Click colourful circles to toggle flags 0..5
 	Shift-drag in the navigator to select multiple sprites
+	Navigate through sprites with - and + keys
 	Operations on selected sprites:
 		f to flip
 		v to flip vertically
@@ -125,7 +129,9 @@ Welcome to PICO-8!
 		Cursor keys to shift sprite (loops)
 		Ctrl-C to copy
 		Ctrl-V to paste
-	
+		toggle flags by clicking on the 6 circles
+
+
 :: Map
 
 	Place selected sprite in grid cel
@@ -138,17 +144,29 @@ Welcome to PICO-8!
 :: Sfx
 
 	Click and drag current instrument
-	Click/Right-click on SPD to decrease/increase speed (lower value means faster)
+	Hold control while painting frequencies to snap to Cm pentatonic
+	
+	Click/right-click on SPD to decrease/increase speed (lower value means faster)
+		// hold shift for x4
+	LP0 LP1 determines looping start and end points
 	Space to start/stop
 	
 	Use the view mode buttons to edit the sfx's data as a graph or a tracker-style.
-	Note: only SFX 0 can not be used for music (because 0 indicates an empty pattern)
 	
+	Tracker mode: each note shows: frequency octave instrument volume effect
+	Shift-click instrument / effect / volume to set for all notes
+	
+	Effects: 0 none 1 slide 2 vibrato 3 drop 4 fade_in 5 fade_out 6 arp fast 7 arp slow
+
+	Arpeggio commands (6,7) iterate over groups of 4 notes at speed 2 and 4
+
+
 :: Music
 
-	Click/Right-click pattern numbers to indicate which Sfx will be played for that pattern
+	Click/Right-click pattern numbers to indicate which sfx will be played for that pattern
 	Use loop and stop flags to control play-back flow.
 	Space to start/stop
+	
 	
 ============================================================================================
 	Lua Primer
@@ -259,8 +277,13 @@ For more detailed information, see www.lua.org.
 
 load filename
 save filename
-	load or save a cartridge
-
+	Load or save a cartridge
+	Use ".png" format to save a png -- otherwise text format is used
+	
+	For .png carts, run the program first and press F7 to select a preview image
+	Also the first two lines of the program starting with '--' are drawn to the cart's label 
+	Suggested: first line title, second line authors
+	
 run
 	Run from the start of the program
 
@@ -464,19 +487,22 @@ btn i [p]
 	Audio
 --------------------------------------------------------------------------------------------
 
-sound n [channel [offset]]
+sfx n [channel [offset]]
 
 	play sfx n on channel from note offset
 	n -1 to stop sound on that channel
-	channel -1 to automatically choose a channel
+	any music playing on that channel will be halted
+	channel -1 to automatically choose a channel that is not being used for music playback
 	offset in notes (0..31)
 
-music [n [fade_len]]
+music [n [fade_len [channel_mask]]]
 
 	play music starting from pattern n (0..63)
-	p -1 to stop music
+	n -1 to stop music
 	fade_len in ms (default: 0)
-
+	channel_mask specifies which channels to play music on
+		e.g. to play on channels 0..2: 1+2+4 = 7
+		defaults to 15 -- all channels (1+2+4+8)
 
 --------------------------------------------------------------------------------------------------------
 	Map
@@ -583,7 +609,16 @@ v0.0.3
 
 Added: Palette mapping type 1 (on display)
 Added: Collections can be initialized with c={1,2,..}
-Added: holdframe()
+Added: holdframe() // used automatically by _draw(), update()
+Added: Sprite selections and operations across selections
+Added: Map selection and stamp tool
+Added: Immediate mode screen buffer preserved while switching views
+Added: Channel mask for music playback
+Added: Memory mapping for live sound data
+Added: .png cart format
+Added: Sprite navigation by keyboard (-, +)
+Fixed: Strict 4-channel sound
+Fixed: Automatic sfx channel selection (channel index: -1)
 
 
 v0.0.2
