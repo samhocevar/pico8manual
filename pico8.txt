@@ -1,14 +1,13 @@
 ============================================================================================
 
- PICO-8  v0.0.3
+ PICO-8  v0.0.4
  http://www.pico-8.com
  (c) Copyright 2014-2015 Lexaloffle Games LLP
  Alpha version; please do not distribute!
- Author: joseph@lexaloffle.com
-  
- User Manual // WIP!
+ Author: Joseph White // joseph@lexaloffle.com
 
 ============================================================================================
+
 
 Welcome to PICO-8!
 
@@ -37,9 +36,9 @@ Welcome to PICO-8!
 	Graphics functions for drawing sprites, sections of the map and geometric primitives.
 	Palette mapping for recolouring sprites at draw-time and performing screen fades.
 	Iterators and methods for managing collections of objects (e.g. game world actors)
-	Compact data format for sharing cartridges as a single .png file.
-	Pause programs, modify live data and resume them using STOP and RESUME.
-	Display interrupt allowing harmless infinite loops. while(true) print("pico rulz") end
+	Compact and cute data format for sharing cartridges as a single .png file.
+	Pause programs, modify live data and resume them.
+	Display interrupt allowing harmless infinite loops. while(true) print("pico-8 rulz") end
 
 	
 :: Hello World
@@ -56,7 +55,7 @@ Welcome to PICO-8!
 	You can build up an interactive program by using commands like this in the code editing
 	mode along with two special callback function _update and _draw. For example, the following
 	program allows you to move a circle around with the cursor keys. Press escape to switch
-	to the code editor and type or copy&paste the following code:
+	to the code editor and type or copy & paste the following code:
 
 	X = 64  Y = 64
 	FUNCTION _UPDATE()
@@ -77,45 +76,72 @@ Welcome to PICO-8!
 
 :: Example Cartridges
 
+	These cartridges are included with pico-8 and can be installed by typing:
+	INSTALL_DEMOS
+	CD DEMOS
+	
 	API       Demonstrates most PICO-8 functions
-	SERP      Serpinsky triangle
-	MANDEL    Mandelbrot explorer
-	PLAT      Platformer demo -- collect gems
-	BLUEY     Collect apples by modifying map
+	JELPI     Platform game demo w/ 2p support 
 	CAST      2.5D Raycaster demo
+	MANDEL    Mandelbrot explorer
 	AUTOMATA  1D automata explorer
+	SERP      Serpinsky triangle
 	DRIPPY    Draw a drippy squiggle
-	POKECOL   Drawing to screen with poke()
 	STOMPY    Music cart
 	WOO       Music cart
 
 	To run a cartridge, open pico-8 and type:
 
-	LOAD "NAME"
+	LOAD JELPI
 	RUN
 	
 	Press escape to stop the program, and once more to enter editing mode
-	Use the cursor keys for dpad (joystick) and ZX or CV for buttons A & B
+	Use the cursor keys for joystick and ZX or CV for buttons A & B
+
+
+:: Filesystem
+
+	These commands can be used to manage files and directories (folders):
 	
+	LS         list the current directory
+	CD BLAH    change directory
+	CD ..      go up a directory
+	CD /       change back to top directory (on pico-8's virtual drive)
+	MKDIR      make a directory
+	FOLDER     open the current directory in the host operating system's file browser
+
+	LOAD BLAH  load a cart from the current directory
+	SAVE BLAH  save a cart to the current directory
+
+	If you want to move files around, duplicate them or delete them, best use the 
+	FOLDER command and do it in the host operating system.
+	
+	The default location for pico-8's drive is:
+	
+	Windows: C:/Users/Yourname/AppData/Roaming/pico-8/carts
+	OSX: /Users/Yourname/Library/Application Support/pico-8/carts
+	Linux: ~/.lexaloffle/pico-8/carts
+
+	You can change this and other settings in pico-8/config.txt
+
 ============================================================================================
 	Editing Modes
 ============================================================================================
-
-	Note: no undo implemented yet -- be careful!
 	
 	Press escape to toggle between console and editor
-	Click editing mode tabs at top right to switch or press 
+	Click editing mode tabs at top right to switch or press CTRL+LEFT or CTRL+RIGHT
 
 
-:: Code
+:: Code Editor
 	
-	Normal text editor. Use cursors and pageup, pagedown to navigate.
 	Hold shift to select (or click and drag with mouse)
-	CTRL-X, C, V to cut copy or paste as usual
-	No undo or search/replace yet -- sorry!
-
-
-:: Gfx
+	CTRL-X, C, V to cut copy or paste selected
+	CTRL-Z, Y to undo, redo
+	CTRL-UP, DOWN to navigate to the previous, next function
+	
+	// sorry, no text search yet!
+	
+:: Gfx Editor
 
 	Click on the sprite to edit, and choose a view zoom size
 	Hold LCONTROL to search and replace a colour
@@ -132,7 +158,7 @@ Welcome to PICO-8!
 		toggle flags by clicking on the 6 circles
 
 
-:: Map
+:: Map Editor
 
 	Place selected sprite in grid cel
 	Each cel only stores one 8-bit values (normally used as an index into the sprite sheet)
@@ -141,7 +167,7 @@ Welcome to PICO-8!
 	To copy a block of values, use the selection tool and then stamp tool to paste
 	To pan around the map, use the pan tool or hold space
 	
-:: Sfx
+:: Sfx Editor
 
 	Click and drag current instrument
 	Hold control while painting frequencies to snap to Cm pentatonic
@@ -149,22 +175,28 @@ Welcome to PICO-8!
 	Click/right-click on SPD to decrease/increase speed (lower value means faster)
 		// hold shift for x4
 	LP0 LP1 determines looping start and end points
-	Space to start/stop
 	
-	Use the view mode buttons to edit the sfx's data as a graph or a tracker-style.
+	SPACE to start/stop
+	a to release a looping sample
 	
-	Tracker mode: each note shows: frequency octave instrument volume effect
-	Shift-click instrument / effect / volume to set for all notes
+	Use the view mode buttons to edit the sfx's data as a graph or tracker-style.
 	
-	Effects: 0 none 1 slide 2 vibrato 3 drop 4 fade_in 5 fade_out 6 arp fast 7 arp slow
+	Tracker mode: 
+		each note shows: frequency octave instrument volume effect
+		Shift-click instrument / effect / volume to set for all notes
+		
+		To enter a note, use q2w3er5t6y7ui zsxdcvgbhnjm (musical keyboard layout)
+		New notes are given the selected instrument/effect values
+		To delete a note, press backspace or set the volume to 0
+		
+		Effects: 0 none 1 slide 2 vibrato 3 drop 4 fade_in 5 fade_out 6 arp fast 7 arp slow
+		Arpeggio commands (6,7) iterate over groups of 4 notes at speed 2 and 4
 
-	Arpeggio commands (6,7) iterate over groups of 4 notes at speed 2 and 4
 
-
-:: Music
+:: Music Editor
 
 	Click/Right-click pattern numbers to indicate which sfx will be played for that pattern
-	Use loop and stop flags to control play-back flow.
+	Top right: use loop start, loop back and stop flags to control playback flow.
 	Space to start/stop
 	
 	
@@ -269,6 +301,10 @@ For more detailed information, see www.lua.org.
 	PICO-8 is built on the Lua scripting language, but does not include the Lua standard library.
 	Instead use the following functions, which are listed with their optional parameters in square 
 	brackets. For an example program that uses most of the api functions, try LOAD("API")
+	
+	Functions are written here as:
+	function_name parameter [optional_parameter]
+	
 
 --------------------------------------------------------------------------------------------------------
 	System
@@ -280,18 +316,35 @@ save filename
 	Load or save a cartridge
 	Use ".png" format to save a png -- otherwise text format is used
 	
-	For .png carts, run the program first and press F7 to select a preview image
-	Also the first two lines of the program starting with '--' are drawn to the cart's label 
-	Suggested: first line title, second line authors
+	The ".p8" can be ommited in both cases, and it is automatically added
+		save("blah") --> save("blah.p8")
+		save("blah.png") --> save("blah.p8.png")
 	
+	Save goes for loading. If the file is not found, pico-8 will try again with ".p8" inserted.
+	
+	:: Saving .png carts with a text label and preview image
+	
+	To generate a preview image saved with the cart, run the program first and press F7 to grab.
+	The first two lines of the program starting with '--' are drawn to the cart's label 
+	Suggested: first line title, second line authors
+
+
+folder
+	Open the carts folder in the host operating system.
+
+files
+	List all pico-8 files (*.p8*) in the current folder
+
 run
 	Run from the start of the program
+	Can be called from inside a program to reset program.
 
 resume
 	Run from the existing cart state
 	
-reset
-	Reset the machine // not implemented
+reboot
+	Reboot the machine
+	Useful for starting a new project
 
 stat x
 	Returns the current cpu useage (0) or memory useage (1)
@@ -441,7 +494,7 @@ spr n x y [w h]
 
 sspr sx sy sw sh dx dy dw dh [flip]
 
-	stretch rectangle from sprite sheet (sx, sy, sw, sh)
+	stretch rectangle from sprite sheet (sx, sy, sw, sh) // give in pixels
 	and draw in rectangle (dx, dy, dw, dh)
 	flip=true to flip horizontally // unimplemented
 
@@ -480,8 +533,16 @@ btn i [p]
 	p: player index 0 or 1
 	
 	Default keyboard mappings to player buttons:
-		player 0: cursors, Z,X/C,V/N,M
-		player 1: ESDF, LSHIFT,A/TAB,Q
+		player 0: cursors, Z,X / C,V / N,M
+		player 1: ESDF, LSHIFT,A / TAB,Q
+
+
+btnp i [p]
+
+	same as btn() but only true when the button was not pressed the last frame
+	btn() also returns true every 4 frames after the button is held for 12 frames.
+	useful for things like 'press a button to continue' or menu item movement.
+
 
 --------------------------------------------------------------------------------------------
 	Audio
@@ -491,7 +552,8 @@ sfx n [channel [offset]]
 
 	play sfx n on channel from note offset
 	n -1 to stop sound on that channel
-	any music playing on that channel will be halted
+	n -2 to release sound on that channel from looping
+	any music playing on the channel will be halted
 	channel -1 to automatically choose a channel that is not being used for music playback
 	offset in notes (0..31)
 
@@ -532,11 +594,11 @@ mapdraw cel_x cel_y screen_x screen_y cel_w cel_h [layer]
 
 PICO-8 has 3 types of memory:
 
-	1. core ram (32k): screen, state data, extra data. Access with peek() poke() memcpy()
-	2. cart rom: same layout as 1 until 0x4300. Copy from cart to core ram with reload()
-	3. lua memory (256k): compiled program + variables. Pay no attention to the man behind the curtain.
+	1. base ram (32k): see layout below. Access with peek() poke() memcpy() memset()
+	2. cart rom: same layout as 1 until 0x4300. Copy from cart to base ram with reload()
+	3. lua ram (256k): compiled program + variables. Pay no attention to the man behind the curtain.
 
-Core ram memory layout
+Base ram memory layout
 	0x0    gfx
 	0x1000 gfx2/map2 (shared)
 	0x2000 map
@@ -548,28 +610,32 @@ Core ram memory layout
 	0x6000 screen (8k)
 	
 	Colour format (gfx/screen) is 2 pixels per byte: low bits on the left
-
+	Map format is one byte per cel (normally used as a sprite index)
+	
 peek addr
 poke addr val
 
-	Read and write one byte to an address in core ram.
+	Read and write one byte to an address in base ram.
 	Legal addresses are 0x0..0x7fff
 	Reading or writing outside causes a fault
 
 memcpy dest_addr source_addr len
 
-	Copy len bytes of core ram from source to dest
+	Copy len bytes of base ram from source to dest
 	Sections can be overlapping
 
 reload dest_addr source_addr len
 
 	Same as memcpy, but copies from cart rom
+	if source_addr >= 0x4300, can read code ascii into ram
 
 cstore dest_addr source_addr len
 
-	Same as memcpy, but copies from core ram to cart rom
+	Same as memcpy, but copies from base ram to cart rom
+	cstore() is equivalent to cstore(0, 0, 0x4300)
 	Can use for writing tools to construct carts or to visualize the state 
 	of the map / spritesheet using the map editor / gfx editor.
+	if dest_addr >= 0x4300, can clobber program ascii on cart
 
 memset dest_addr val len
 
@@ -604,6 +670,25 @@ abs x
 
 ------------------------------------------------------------------------------------------------------------
 ALPHA HISTORY
+
+v0.0.4
+
+Added: Jelpi demo cart
+Added: Internal carts // use install_demos()
+Added: Joystick support
+Added: Undo/redo in code editor
+Added: Scroll wheel in code editor
+Added: LCTRL + UP/DOWN to navigate functions in code editor
+Added: LALT + LEFT/RIGHT to switch editing modes
+Added: btnp()
+Added: Release looping sample (a in editor , sfx(-2, channel) in code)
+Changed: Music stops when pausing program execution
+Changed: Allow 8 settable sprite flags
+Changed: Made noise instrument more bassy
+Fixed: Home, end keys
+Fixed: Sprite flags 4,5 not saved
+Fixed: mset() discarding 4 high bits
+Fixed: Crash when highlighting long strings
 
 v0.0.3
 
