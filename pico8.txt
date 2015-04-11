@@ -1,6 +1,6 @@
 ============================================================================================
 
- PICO-8  v0.0.4
+ PICO-8  v0.0.5
  http://www.pico-8.com
  (c) Copyright 2014-2015 Lexaloffle Games LLP
  Alpha version; please do not distribute!
@@ -19,6 +19,12 @@ Welcome to PICO-8!
 	but expressive designs and hopefully to give PICO-8 cartridges their own particular look and 
 	feel.
 
+:: Keys
+
+	Toggle Fullscreen: Alt+Enter or command-F
+	Quit: Alt+F4 or command-Q
+	Player 1 keys: Cursors + ZX / NM
+	Player 2 keys: SDFE + tab,Q / shift A
 
 :: Specs
 
@@ -29,16 +35,6 @@ Welcome to PICO-8!
 	Code: Lua (max 15400 bytes of source code) 
 	Sprites: Single bank of 128 8x8 sprites (+128 shared)
 	Map: Single 128x32 (+128x32 shared)
-
-:: Features
-
-	Built-in tools for editing programs, drawing sprites and maps, and composing sound and music.
-	Graphics functions for drawing sprites, sections of the map and geometric primitives.
-	Palette mapping for recolouring sprites at draw-time and performing screen fades.
-	Iterators and methods for managing collections of objects (e.g. game world actors)
-	Compact and cute data format for sharing cartridges as a single .png file.
-	Pause programs, modify live data and resume them.
-	Display interrupt allowing harmless infinite loops. while(true) print("pico-8 rulz") end
 
 	
 :: Hello World
@@ -66,7 +62,7 @@ Welcome to PICO-8!
 	END
 
 	FUNCTION _DRAW()
-	 RECTFILL(0,0,127,127,6)
+	 RECTFILL(0,0,127,127,5)
 	 CIRCFILL(X,Y,7,8)
 	END
 
@@ -103,7 +99,7 @@ Welcome to PICO-8!
 
 	These commands can be used to manage files and directories (folders):
 	
-	LS         list the current directory
+	DIR        list the current directory
 	CD BLAH    change directory
 	CD ..      go up a directory
 	CD /       change back to top directory (on pico-8's virtual drive)
@@ -137,9 +133,8 @@ Welcome to PICO-8!
 	Hold shift to select (or click and drag with mouse)
 	CTRL-X, C, V to cut copy or paste selected
 	CTRL-Z, Y to undo, redo
-	CTRL-UP, DOWN to navigate to the previous, next function
-	
-	// sorry, no text search yet!
+	CTRL-F, G to search for text, repeat search
+	ALT-UP, DOWN to navigate to the previous, next function
 	
 :: Gfx Editor
 
@@ -155,21 +150,23 @@ Welcome to PICO-8!
 		Cursor keys to shift sprite (loops)
 		Ctrl-C to copy
 		Ctrl-V to paste
-		toggle flags by clicking on the 6 circles
+		toggle flags by clicking on the 8 circles (see: FSET, FGET)
 
 
 :: Map Editor
 
 	Place selected sprite in grid cel
-	Each cel only stores one 8-bit values (normally used as an index into the sprite sheet)
+	Each cel only stores one 8-bit value (normally used as an index into the sprite sheet)
 	Drawing to cels with y >= 32 clobbers shared data (bottom half of sprite sheet)
 	To draw multiple sprites, select from sprite navigator with shift+drag
 	To copy a block of values, use the selection tool and then stamp tool to paste
 	To pan around the map, use the pan tool or hold space
 	
+
 :: Sfx Editor
 
 	Click and drag current instrument
+	Shift click an instrument to set all notes to that instrument
 	Hold control while painting frequencies to snap to Cm pentatonic
 	
 	Click/right-click on SPD to decrease/increase speed (lower value means faster)
@@ -188,10 +185,11 @@ Welcome to PICO-8!
 		To enter a note, use q2w3er5t6y7ui zsxdcvgbhnjm (musical keyboard layout)
 		New notes are given the selected instrument/effect values
 		To delete a note, press backspace or set the volume to 0
+		(Setting volume to 0 can be used to delete a string of notes more easily)
 		
 		Effects: 0 none 1 slide 2 vibrato 3 drop 4 fade_in 5 fade_out 6 arp fast 7 arp slow
 		Arpeggio commands (6,7) iterate over groups of 4 notes at speed 2 and 4
-
+		
 
 :: Music Editor
 
@@ -221,17 +219,22 @@ For more detailed information, see www.lua.org.
 	B = FALSE
 	T = {1,2,3}
 	
-	Numbers in pico-8 are all 16:16 fixed point. They can range from -32768 to 32767.
+	Numbers in pico-8 are all 16:16 fixed point. They range from -32768 to 32767.
 	Integer values can be written in hexidecimal. e.g. 0x11 = 17.0
 	
 :: Conditionals
 
-	IF (NOT B) THEN
+	IF NOT B THEN
 		PRINT("B IS FALSE")
 	ELSE
 		PRINT("B IS NOT FALSE")
 	END
-	
+
+	IF (4 == 4) THEN PRINT("EQUAL") END
+	IF (4 ~= 3) THEN PRINT("NOT EQUAL") END
+	IF (4 <= 4) THEN PRINT("LESS THAN OR EQUAL") END
+	IF (4 > 3) THEN PRINT("MORE THAN") END
+
 :: Loops
 
 	FOR X=1,10,2 DO
@@ -270,12 +273,8 @@ For more detailed information, see www.lua.org.
 	B.Y = 2
 
 :: Iterating over tables
-
-	Works if using PICO-8's ADD() and DEL() functions to construct
 	
-	A = {}
-	ADD(A, "hello")
-	ADD(A, "blah")
+	A = {"hello", "blah"}
 	ADD(A, "world")
 	DEL(A, "blah")
 	PRINT(COUNT(A)) -- 2
@@ -293,14 +292,41 @@ For more detailed information, see www.lua.org.
 
 	end-of-line characters have no meaning except to terminate comments.
 	X = 1 Y = 2 PRINT(X+Y) -- this line will run ok
+
+
+:: pico-8 shorthand
+
+	pico-8 allows a couple of non-standard, shorter ways to write common patterns.
 	
+	1. IF THEN END statements on a single line can be expressed without the THEN & END
+	
+	IF (NOT B) I=1 J=2
+	
+	-- is equivalent to: IF (NOT B) THEN I=1 J=2 END
+	-- note that the condition must be surrounded by brackets.
+	
+	
+	2. unary math operators
+	
+	a += 2  -- equivalent to: a = a + 2
+	a -= 2  -- equivalent to: a = a - 2
+	a *= 2  -- equivalent to: a = a * 2
+	a /= 2  -- equivalent to: a = a / 2
+	a %= 2  -- equivalent to: a = a % 2
+	
+	
+	3. != operator
+	
+	Not shorthand, but pico-8 also accepts != instead of ~= for "not equal to"
+
+
 ============================================================================================
 	API
 ============================================================================================
 
 	PICO-8 is built on the Lua scripting language, but does not include the Lua standard library.
-	Instead use the following functions, which are listed with their optional parameters in square 
-	brackets. For an example program that uses most of the api functions, try LOAD("API")
+	Instead use the following functions. For an example program that uses most of the api 
+	functions, try DEMOS/API.P8 (after using INSTALL_DEMOS).
 	
 	Functions are written here as:
 	function_name parameter [optional_parameter]
@@ -320,13 +346,13 @@ save filename
 		save("blah") --> save("blah.p8")
 		save("blah.png") --> save("blah.p8.png")
 	
-	Save goes for loading. If the file is not found, pico-8 will try again with ".p8" inserted.
+	Same goes for loading. If the file is not found, pico-8 will try again with ".p8" inserted.
 	
 	:: Saving .png carts with a text label and preview image
 	
-	To generate a preview image saved with the cart, run the program first and press F7 to grab.
-	The first two lines of the program starting with '--' are drawn to the cart's label 
-	Suggested: first line title, second line authors
+	To generate a preview image saved with the cart, run the program first and press F7 to grab
+	a screenshot. The first two lines of the program starting with '--' are drawn to the cart's
+	label.
 
 
 folder
@@ -341,7 +367,7 @@ run
 
 resume
 	Run from the existing cart state
-	
+
 reboot
 	Reboot the machine
 	Useful for starting a new project
@@ -356,6 +382,9 @@ flip
 	If your program does not call flip before a frame is up, and a _draw() callback
 	is not in progress, the current contents of the back buffer are copied to screen.
 	No need to flip() if provide a _draw() callback
+
+time
+	Seconds since boot. Useful for getting a random seed.
 
 --------------------------------------------------------------------------------------------
 	Program Structure
@@ -433,8 +462,11 @@ fset n f v
 print str [x y [col]]
 
 	Print a string
-	
-	
+	If only str is supplied, and the cursor reaches the end of the screen,
+	a carriage return and vertical scroll is automatically applied.
+	(terminal-like behaviour)
+
+
 cursor x y
 
 	Set the cursor position and carriage return margin
@@ -492,19 +524,22 @@ spr n x y [w h]
 	Colour 0 always drawn as transparent.
 	
 
-sspr sx sy sw sh dx dy dw dh [flip]
+sspr sx sy sw sh dx dy [dw dh [flip]]
 
 	stretch rectangle from sprite sheet (sx, sy, sw, sh) // give in pixels
 	and draw in rectangle (dx, dy, dw, dh)
-	flip=true to flip horizontally // unimplemented
+	dw, dh defaults to sw, sh
+	flip=true to flip horizontally
 
 
 map mx my sx sy [w h [layer]]
 
 	draw section of map (in cels) at screen position sx, sy (pixels)
 	if layer is specified, only cels with the same flag number set are drawn
-
-
+		// Bitfield. So 0x5 means draw sprites with bit 0 and bit 2 set.
+		// defaults to all sprites
+	exception: sprite 0 is always taken to mean empty.
+	
 --------------------------------------------------------------------------------------------
 	Collections
 --------------------------------------------------------------------------------------------
@@ -595,7 +630,7 @@ mapdraw cel_x cel_y screen_x screen_y cel_w cel_h [layer]
 PICO-8 has 3 types of memory:
 
 	1. base ram (32k): see layout below. Access with peek() poke() memcpy() memset()
-	2. cart rom: same layout as 1 until 0x4300. Copy from cart to base ram with reload()
+	2. cart rom: same layout as base ram until 0x4300. Copy from cart to base ram with reload()
 	3. lua ram (256k): compiled program + variables. Pay no attention to the man behind the curtain.
 
 Base ram memory layout
@@ -661,15 +696,58 @@ flr x
 
 cos x
 sin x
+
 	Returns the cosine of x, where 1.0 indicates a full circle
 	e.g. sin(0.25) returns -1
 
 abs x
+
 	Returns the absolute (positive) value of x
 
+rnd x
+	Returns a random number n, where 0 <= n < x
+	If you want an integer, use flr(rnd(x))
+	
+seed x
+	Sets the random number seed
+
+
+band x y
+bor  x y
+bxor x y
+bnot x
+shl  x y
+shr  x y
+
+	Bitwise operations
+	
 
 ------------------------------------------------------------------------------------------------------------
 ALPHA HISTORY
+
+v0.0.5
+
+Added: help()
+Added: Ctrl+F / Ctrl+G to search for text, repeat search
+Added: del key in code editor
+Added: Short-hand single-line IF statements
+Added: Unary operators += -= /= *= %=
+Added: srand(), time(), added rnd() to docs
+Added: Ctrl+D to duplicate line
+Added: interactive ls() for multi-page file listings
+Added: band() bor() bxor() bnot() shl() shr()
+Added: runtime error line number
+Added: dir() (aliased to ls())
+Changed: print() only autoscrolls when called with no parameters
+Changed: alt+up/down to skip between function definitions (was ctrl)
+Changed: sspr() dw, dh defaults to sw, sh
+Fixed: Load crashes on files that are not .p8 format or directories
+Fixed: Misc editor cursor position glitches
+Fixed: Crash when syntax error occurs before viewing code
+Fixed: Broken newlines after rebooting
+Fixed: mkdir() called with no parameters creating "(null)" directory
+Fixed: scrolling past top of code with scrollwheel
+Fixed: alt-f4 to fastquit
 
 v0.0.4
 
