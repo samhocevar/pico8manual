@@ -1,6 +1,6 @@
 ============================================================================================
 
- PICO-8 v0.1.1
+ PICO-8 v0.1.2
  http://www.pico-8.com
  (c) Copyright 2014-2015 Lexaloffle Games LLP
  Author: Joseph White // hey@lexaloffle.com
@@ -47,7 +47,7 @@ Welcome to PICO-8!
 	
 :: Hello World
 
-	After pico-8 boots, try typing some of these commands followed by enter:
+	After PICO-8 boots, try typing some of these commands followed by enter:
 
 		PRINT("HELLO WORLD")
 		RECTFILL(80,80,120,100,12)
@@ -80,21 +80,21 @@ Welcome to PICO-8!
 
 :: Example Cartridges
 
-	These cartridges are included with pico-8 and can be installed by typing:
+	These cartridges are included with PICO-8 and can be installed by typing:
 	INSTALL_DEMOS
 	CD DEMOS
 	
-	API       Demonstrates most PICO-8 functions
-	JELPI     Platform game demo w/ 2p support 
-	CAST      2.5D Raycaster demo
-	MANDEL    Mandelbrot explorer
-	AUTOMATA  1D automata explorer
-	SERP      Serpinsky triangle
-	DRIPPY    Draw a drippy squiggle
-	STOMPY    Music cart
-	WOO       Music cart
+	API        Demonstrates most PICO-8 functions
+	JELPI      Platform game demo w/ 2p support 
+	CAST       2.5D Raycaster demo
+	MANDEL     Mandelbrot explorer
+	COLLIDE    Example wall and actor collisions
+	BUTTERFLY  Serpinsky triangles thing
+	DRIPPY     Draw a drippy squiggle
+	STOMPY     Music cart
+	WOO        Music cart
 
-	To run a cartridge, open pico-8 and type:
+	To run a cartridge, open PICO-8 and type:
 
 	LOAD JELPI
 	RUN
@@ -119,7 +119,7 @@ Welcome to PICO-8!
 	If you want to move files around, duplicate them or delete them, best use the 
 	FOLDER command and do it in the host operating system.
 	
-	The default location for pico-8's drive is:
+	The default location for PICO-8's drive is:
 	
 	Windows: C:/Users/Yourname/AppData/Roaming/pico-8/carts
 	OSX: /Users/Yourname/Library/Application Support/pico-8/carts
@@ -128,7 +128,7 @@ Welcome to PICO-8!
 	You can change this and other settings in pico-8/config.txt
 	
 	Tip: if you are a Dropbox user, it's possible to set the drive directory to be a
-	shared dropbox folder in order to provide a single disk for pico-8 machines spread
+	shared dropbox folder in order to provide a single disk for PICO-8 machines spread
 	across different host machines.
 
 
@@ -138,21 +138,45 @@ Welcome to PICO-8!
 	cartridge is aved to pico-8/backup.
 	
 
-:: Controller Setup
+:: Configuration
 
-	pico-8 uses the SDL2 controller configuration scheme. It will detect common controllers
-	on startup and also looks for custom mappings in sdl_controllers.txt in the same directory 
-	as config.txt (see previous section). sdl_controllers.txt has one mapping per line.
+	:: config.txt
 	
-	To generate a custom mapping string for your controller, use either the controllermap
-	program that comes with SDL2, or try http://www.generalarcade.com/gamepadtool/
+		You can find some settings in config.txt. Edit the file when PICO-8 is not running.
+	
+		Windows: C:/Users/Yourname/AppData/Roaming/pico-8/config.txt
+		OSX: /Users/Yourname/Library/Application Support/pico-8/config.txt
+		Linux: ~/.lexaloffle/pico-8/config.txt
+
+
+	:: Commandline parameters
+	
+		pico-8 [switches] [filename.p8]
+	
+		-run                boot filename.p8 on startup
+		-width n            set the window or screen width and adjust scale to fit if not specified
+		-height n           set the window or screen height and adjust scale to fit if not specified
+		-scale n            set the size of each PICO-8 pixel. "-scale 3" gives pixels rendered at 3x3
+		-windowed n         set windowed mode off (0) or on (1)
+		-sound n            sound volume 0..256
+		-music n            sound volume 0..256
+		-joystick n         joystick controls starts at player n (0..7)
+
+	:: Controller Setup
+	
+		PICO-8 uses the SDL2 controller configuration scheme. It will detect common controllers
+		on startup and also looks for custom mappings in sdl_controllers.txt in the same directory 
+		as config.txt. sdl_controllers.txt has one mapping per line.
+	
+		To generate a custom mapping string for your controller, use either the controllermap
+		program that comes with SDL2, or try http://www.generalarcade.com/gamepadtool/
 	
 
-:: Sharing Cartridges
+:: Sharing Cartridges / HTML5 Exporter
 
-	There are two ways to share carts:
+	There are three ways to share carts:
 	
-		1. Share the .p8 or .p8.png file directly with other pico-8 users
+		1. Share the .p8 or .p8.png file directly with other PICO-8 users
 	
 		2. Post the cart on the Lexaloffe BBS to get a web-playable version
 
@@ -160,6 +184,23 @@ Welcome to PICO-8!
 
 		See save() for notes on how to generate .p8.png versions. (search for .png)
 
+		3. Export the cartridge to a stand-alone html5 version:
+		
+			EXPORT FOO.HTML
+			
+			This will generate two files: foo.html and foo.js (you need both!)
+			
+			You are free to distribute and use exported cartridges as you please, provided 
+			that you have permission from the author and contributors.
+			
+			The .html file is intended as a template that can be modified as needed.
+			It includes some buttons to control settings and a link to an external website
+			(PICO-8 BBS cartridges by default), along with javascript to block keypresses
+			in order to prevent web page scrolling while the cartridge is played.
+			
+			Note that the width and height of the player can be configured, but should
+			normally match the size of the canvas it is displayed on (580,540 by default).
+			
 
 :: Screenshots, Videos and Cartridge Labels
 
@@ -169,11 +210,25 @@ Welcome to PICO-8!
 		F7 Capture cartridge label image
 		F8 Start recording a video
 		F9 Save video to desktop (max: 8 seconds)	
+		
+		// if F6..F9 are not available on your system, use F1..F4
 	
 	Cartridge label is saved when using save() with p8.png format.
 	
 	You can save a video at any time (it is always recording) -- use F8 just to reset
 	the video starting point if you want something less than 8 seconds long.
+
+
+:: Troubleshooting
+
+	Common gotchas to watch out for:
+	
+	- Lua arrays are 1-based by default, not 0-based. FOREACH starts at T[1], not T[0].
+	- cos() and sin() take 0..1 instead of 0..PI*2, and sin() is inverted.
+	- The bottom half of the spritesheet and bottom half of the map occupy the same memory.
+		// Best use only one or the other if you're unsure how this works.
+	- PICO-8 numbers only go up to 32767.
+	- Toggle fullscreen: use alt-enter on OSX (command-F is used for searching text).
 
 
 ============================================================================================
@@ -256,9 +311,13 @@ Welcome to PICO-8!
 
 :: Map Editor
 
-	Place selected sprite in grid cel
-	Each cel only stores one 8-bit value (normally used as an index into the sprite sheet)
-	Drawing to cels with y >= 32 clobbers shared data (bottom half of sprite sheet)
+	The pico-8 map is a 128x32 (or 128x64 using shared space) block of 8-bit values.
+	Each value is shown in the editor as a reference to a sprite (0..255), but you can
+	of course use the data to represent whatever you like.
+
+	The tools are similar to the ones used in sprite editing mode. Select a sprite
+	and click and drag to paint values into the map.	
+
 	To draw multiple sprites, select from sprite navigator with shift+drag
 	To copy a block of values, use the selection tool and then stamp tool to paste
 	To pan around the map, use the pan tool or hold space
@@ -284,10 +343,12 @@ Welcome to PICO-8!
 		each note shows: frequency octave instrument volume effect
 		Shift-click instrument / effect / volume to set for all notes
 		
-		To enter a note, use q2w3er5t6y7ui zsxdcvgbhnjm (musical keyboard layout)
+		To enter a note, use q2w3er5t6y7ui zsxdcvgbhnjm (piano-like layout)
 		New notes are given the selected instrument/effect values
 		To delete a note, press backspace or set the volume to 0
 		(Setting volume to 0 can be used to delete a string of notes more easily)
+		
+		// note: from 0.1.2, non-qwerty keyboards use the same piano-like layout
 		
 		Effects: 0 none 1 slide 2 vibrato 3 drop 4 fade_in 5 fade_out 6 arp fast 7 arp slow
 		Arpeggio commands (6,7) iterate over groups of 4 notes at speed 2 and 4
@@ -322,9 +383,13 @@ For more details, or to find about proper Lua, see www.lua.org.
 	B = FALSE
 	T = {1,2,3}
 	
-	Numbers in pico-8 are all 16:16 fixed point. They range from -32768 to 32767.
-	Integer values can be written in hexidecimal. e.g. 0x11 = 17.0
+	Numbers in pico-8 are all 16:16 fixed point. They range from -32768.0 to 32767.99
 	
+	Hexidecimal notation with optional fractional parts can be used:
+		0x11        -- 17
+		0x11.4000   -- 17.25
+	
+
 :: Conditionals
 
 	IF NOT B THEN
@@ -351,14 +416,14 @@ For more details, or to find about proper Lua, see www.lua.org.
 		X = X + 1
 	END
 	
-	FOR X=1,5,3 DO PRINT(X) END   -- 1,4
+	FOR X=1,10,3 DO PRINT(X) END   -- 1,4,7,10
 
 	FOR X=5,1,-2 DO PRINT(X) END  -- 5,3,1
 	
 
 :: Functions and Local Variables
 
-	Y=0
+	Y=0 
 	FUNCTION PLUSONE(X)
 		LOCAL Y = X+1
 		RETURN Y
@@ -367,48 +432,37 @@ For more details, or to find about proper Lua, see www.lua.org.
 	PRINT(Y)          -- 0
 
 
-:: Tables (Arrays and Objects)
-
-	Arrays use 1-based indexing by default
-
-	A = {1,2,3,4}
-	A[3]=A[4]
-	FOREACH(A, PRINT) -- 1 2 4 4
+:: Tables
 	
-	Indexes can also be strings, and written as member variables
+	In Lua, tables are a collection of key-value pairs where the key and value types can both 
+	be mixed. They can be used as arrays by indexing them with integers.
+
+	A={} -- create an empty table
+	A[1] = "BLAH"
+	A[2] = 42
+	A["FOO"] = {1,2,3}
+
+	-- Arrays use 1-based indexing by default
 	
-	B = {}
-	B.X = 2 -- is equivalent to B["X"]
-	B.Y = 2
-
-
-:: Iterating over tables (PICO-8 implementation)
+	A = {11,12,13,14}
+	PRINT(A[2]) -- 12
 	
-	A = {"hello", "blah"}
-	ADD(A, "world")
-	DEL(A, "blah")
-	PRINT(COUNT(A)) -- 2
+	-- The size of a table indexed with sequential 1-based integers:
 	
-	FOR ITEM IN ALL(A) DO PRINT(ITEM) END
-
-	-- or, equivalently:
-	FOREACH(A, PRINT)
+	PRINT(#A)   -- 4
 	
-	-- also equivalently, using an anonymous function:
-	FOREACH(A, FUNCTION(I) PRINT(I) END)
-
-
-:: End-lines
-
-	end-of-line characters have no meaning except to terminate comments.
-	X = 1 Y = 2 PRINT(X+Y) -- this line will run ok
+	-- Indexes that are strings can be written using dot notation
 	
-	An exception is shorthand IF statements (see the next section)
+	PLAYER = {}
+	PLAYER.X = 2 -- is equivalent to PLAYER["X"]
+	PLAYER.Y = 3
 
+	-- see also the tables section in the api reference below.
 
-:: pico-8 shorthand
+	
+:: PICO-8 Shorthand
 
-	pico-8 also allows several non-standard, shorter ways to write common patterns.
+	PICO-8 also allows several non-standard, shorter ways to write common patterns.
 	
 	1. IF THEN END statements on a single line can be expressed without the THEN & END
 	
@@ -438,12 +492,15 @@ For more details, or to find about proper Lua, see www.lua.org.
 
 	PICO-8 is built on the Lua scripting language, but does not include the Lua standard library.
 	Instead, a small api is offered in keeping with pico-8's minimal design and limited screen
-	space. For an example program that uses most of the api functions, see DEMOS/API.P8 
+	space. For an example program that uses most of the api functions, see /DEMOS/API.P8 
 	
 	Functions are written here as:
 	function_name parameter [optional_parameter]
-	
 
+	System functions called from commandline can omit the usual brackets and string quotes:
+	load blah.p8 --> load("blah.p8")
+
+	
 --------------------------------------------------------------------------------------------------------
 	System
 --------------------------------------------------------------------------------------------------------
@@ -481,7 +538,7 @@ save filename
 folder
 	Open the carts folder in the host operating system.
 
-files
+ls
 	List all files in the current folder
 
 run
@@ -510,7 +567,10 @@ flip
 	If your program does not call flip before a frame is up, and a _draw() callback
 	is not in progress, the current contents of the back buffer are copied to screen.
 
-
+printh str
+	Print a string to host operating system's console for debugging.
+	
+	
 --------------------------------------------------------------------------------------------
 	Program Structure
 --------------------------------------------------------------------------------------------
@@ -655,7 +715,7 @@ palt c t
 
 	Set transparency for colour index to t (boolean)
 	Transparency is observed by spr(), sspr() and map()
-	e.g. palt(8, false) -- red pixels not drawn
+	e.g. palt(8, true) -- red pixels not drawn
 	palt() resets to default: all colours opaque except colour 0
 	
 
@@ -680,21 +740,71 @@ sspr sx sy sw sh dx dy [dw dh] [flip_x] [flip_y]
 
 
 --------------------------------------------------------------------------------------------
-	Collections
+	Tables
 --------------------------------------------------------------------------------------------
+	
+	
+add t v
+
+	Add value v to the end of table t.
+	Equivalent to t[#t+1] = v
+
+		FOO={}        -- create empty table
+		ADD(FOO, 11)
+		ADD(FOO, 22)
+		PRINT(FOO[2]) -- 22
+
+del t v
+
+	Delete the first instance of value v in table t
+	The remaining entries are shifted left one index to avoid holes.
+	Note that v is the value of the item to be deleted, not the index into the table!
+	del() can be called safely on a table's item while iterating over that table.
+
+		A={1,10,2,11,3,12}
+		FOR ITEM IN ALL(A) DO
+			IF (ITEM < 10) THEN DEL(A, ITEM) END
+		END
+		FOREACH(A, PRINT) -- 10,11,12
+		PRINT(A[3])       -- 12
 
 
-a = {}
-add(a, "hello")
-add(a, "blah")
-add(a, "world")
-del(a, "blah") -- deletes first occurance of value in collection
-for item in all(a) do print(item) end
-foreach(a, print)
-print(count(a))
+all t
 
-c = {1,2,3}
-foreach(c, print)
+	Used in FOR loops to iterate over all items in a table, in the order they were added.
+	
+		T = {11,12,13};
+		ADD(T,14)
+		ADD(T,"HI")
+		FOR V IN ALL(T) DO PRINT(V) END -- 11 12 13 14 HI
+		PRINT(#T) -- 5
+
+
+foreach t f
+
+	For each item in table t, call function f with the item as a single parameter.
+	
+		FOREACH(T, PRINT)
+
+
+pairs t
+
+	Used in FOR loops to iterate over table t, providing both the key and value for each item.
+	Unlike all(), pairs() iterates over every item regardless of indexing scheme.
+	Order is not guaranteed.
+	
+		T = {["HELLO"]=3, [10]="BLAH"}
+		T.BLUE = 5;
+		FOR K,V IN PAIRS(T) DO
+			PRINT("K: "..K.."  V:"..V)
+		END
+
+	Output:
+		
+		K: 10  v:BLAH
+		K: HELLO  v:3
+		K: BLUE  v:5
+
 
 --------------------------------------------------------------------------------------------
 	Input
@@ -711,7 +821,7 @@ btn [i [p]]
 	
 	Default keyboard mappings to player buttons:
 		player 0: cursors, Z,X / C,V / N,M
-		player 1: ESDF, LSHIFT,A / TAB,Q
+		player 1: ESDF, LSHIFT,A / TAB,Q,E
 
 
 btnp [i [p]]
@@ -795,8 +905,9 @@ PICO-8 has 3 types of memory:
 	0x3100 song
 	0x3200 sfx
 	0x4300 user-defined
-	0x5f00 draw state [,cart data] (192 bytes incl. unused)
-	0x5fc0 (reserved for persistent data -- in development)
+	0x5f00 draw state (+ unused) 
+	0x5f80 persistent cart data (64 bytes)
+	0x5fc0 unused
 	0x6000 screen (8k)
 	
 	Colour format (gfx/screen) is 2 pixels per byte: low bits on the left
@@ -895,36 +1006,110 @@ Bitwise operations
 
 	s = "the quick brown fox"
 	
-	:: length
+	-- length
 	
 		print(#s)          --> 19
 	
 	
-	:: joining strings
+	-- joining strings
 		
 		print("three "..4) --> "three 4"
 	
 	
-	:: sub() to grab substrings
+	-- sub() to grab substrings
 	
 		print(sub(s,5,9))  --> "quick"
 		print(sub(s,5))  --> "quick brown fox"
 
 
+--------------------------------------------------------------------------------------------
+	Cartride Data
+--------------------------------------------------------------------------------------------
+
+	Each cartidge is able to store 64 numbers (256 bytes) of persistent data.
+	This can be used for this things like high scores or to save player progress.
+	
+cartdata id
+
+	Call this once on cartridge load. id is a string up to 64 characters long, and should be
+	unusual enough that other cartridges do not accidentally use the same id.
+	
+	e.g. cartdata("zep_jelpi")
+	
+	legal characters are a..z, 0..9 and underscore (_)
+
+	returns true iff data was loaded.
+
+	cartdata can not be called more than once per cartridge execution
+
+dget index
+
+	Get the number stored at index (0..63)
+	Use this only after you have called cartdata()
+
+dset index value
+
+	Set the number stored at index (0..63)
+	use this only after you have called cartdata()
+	
+
 ------------------------------------------------------------------------------------------------------------
-	KNOWN ISSUES
+	VERSION HISTORY
 ------------------------------------------------------------------------------------------------------------
 
-	Keyboard mapping often broken for non-US layouts
-	Fuzzy scaling on large displays
-	Sound gets choppy on slower machines -- try setting mix_buffer_size in config.txt to 2048
-	OSX cmd+tab sometimes broken when in fullscreen
-
-
-------------------------------------------------------------------------------------------------------------
-	ALPHA HISTORY
-------------------------------------------------------------------------------------------------------------
-
+	v0.1.2
+	
+		Added: html5 cartridge exporter
+		Added: Cartridge save data (64 fixed point numbers)
+		Added: 8-player input
+		Added: Demo carts: COLLIDE and BUTTERFLY
+		Added: Command-line parameters // load cart, -run, settings
+		Added: Alternative function keys (F6..F9 aliased as F1..F4)
+		Added: pairs()
+		Added: printh() for debugging
+		Added: Tab completion for filenames in console
+		Added: stack trace on runtime error
+		Changed: music pattern length taken to be first non-looping channel's length
+		Changed: noise instrument (6) has low frequency white noise scaled by volume
+		Changed: screenshot captures whole window contents at display resolution
+		Changed: del() moves remaining items up one index to maintain a packed table
+		Changed: add(),del(),count(),all() no longer store extra fields
+		Changed: removed count() from docs -- now just a legacy function. Use # operator instead.
+		Changed: cursor only blinks while window is active
+		Changed: peek(), poke() and binary operations (band()..) have no function call overhead
+		Changed: yellow slightly warmer
+		Changed: No camera snapping after pan in map mode
+		Fixed: sqrt() crashing for 0 or >= 32761
+		Fixed: Semi-colon characters in text editor
+		Fixed: Long lines split when saving in .p8 format 
+		Fixed: pget() does not respect camera position
+		Fixed: Error message when peeking or poking outside of legal address space
+		Fixed: Search replace colour fills one pixel outside of selected region
+		Fixed: Playing an empty music pattern breaks subsequent music playback
+		Fixed: Invalid sfx editing state on startup
+		Fixed: Painting instruments values in frequency view also sets volumes
+		Fixed: Inconsistent gif recording speeds
+		Fixed: Unmapped joystick support
+		Fixed: Compressed code size sometimes larger than uncompressed
+		Fixed: mid() fails when first argument is not smallest
+		Fixed: Scroll wheel changes sprite/map zoom while in code editor
+		Fixed: CTRL-R (quick-run) drawing over current line in command mode
+		Fixed: Label capture (F7) does not respect screen palette state
+		Fixed: Syntax highlighting of api functions and hex numbers
+		Fixed: Looping to 0 with negative step finishes at 1
+		Fixed: nil values printed as false instead of nil
+		Fixed: Hexidecimal fractional parts
+		Fixed: btnp() unresponsive when skipping frames
+		Fixed: Editing mode is lost when using ctrl-r to run
+		Fixed: Tracker note entry keys mapped, messing up piano-like layout
+		Fixed: Shared gfx/map memory out of sync after some editor operations
+		Fixed: Alt-gr character entry
+		Fixed: Can map display palette to entries >= 16 using poke()
+		Fixed: Using shift to select in code editor has wrong selection range
+		Fixed: Dragging above top of text causes selection to flip to end
+		Fixed: Duplicate at end of file listing
+		
+		
 	v0.1.1
 
 		Added: Token-based code limiting (8192 tokens, 32k ascii text)
@@ -970,6 +1155,7 @@ Bitwise operations
 		Fixed: Saving and loading a .p8 file adds newline to end of code
 		Fixed: Drag selection to left margin in code editor -> selects all
 		
+		
 	v0.1.0
 
 		Added: demo cart: hello.p8 (use install_demos)
@@ -988,6 +1174,7 @@ Bitwise operations
 		Fixed: clipped error messages in console
 		Fixed: text undo stores rollback points when chaning line number
 		Fixed: print(str) carriage returns to previous x
+
 
 	v0.0.5
 
@@ -1013,6 +1200,7 @@ Bitwise operations
 		Fixed: scrolling past top of code with scrollwheel
 		Fixed: alt-f4 to fastquit
 
+
 	v0.0.4
 
 		Added: Jelpi demo cart
@@ -1031,6 +1219,7 @@ Bitwise operations
 		Fixed: Sprite flags 4,5 not saved
 		Fixed: mset() discarding 4 high bits
 		Fixed: Crash when highlighting long strings
+
 
 	v0.0.3
 
