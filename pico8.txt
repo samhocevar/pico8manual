@@ -1,17 +1,16 @@
 ============================================================================================
 
- PICO-8 v0.1.3
+ PICO-8 v0.1.4
  http://www.pico-8.com
- (c) Copyright 2014-2015 Lexaloffle Games LLP
+ (c) Copyright 2014-2016 Lexaloffle Games LLP
  Author: Joseph White // hey@lexaloffle.com
  
  PICO-8 is built with:
  	SDL2 http://www.libsdl.org
  	Lua 5.2 http://www.lua.org  // see license.txt
  	GIFLIB http://giflib.sourceforge.net/
- 	
+ 
 ============================================================================================
-
 
 Welcome to PICO-8!
 
@@ -30,6 +29,7 @@ Welcome to PICO-8!
 	Quit: Alt+F4 or command-Q
 	Reload/Run/Restart cart: Ctrl+R
 	Quick-Save: Ctrl+S
+	P: Pause (while running)
 	Player 1 keys: Cursors + ZX / NM
 	Player 2 keys: SDFE + tab,Q / shift A
 	
@@ -135,7 +135,7 @@ Welcome to PICO-8!
 :: Backups
 
 	If you quit without saving changes, or overwrite an existing file, a backup of the 
-	cartridge is aved to pico-8/backup.
+	cartridge is saved to pico-8/backup.
 	
 
 :: Configuration
@@ -161,6 +161,7 @@ Welcome to PICO-8!
 		-sound n            sound volume 0..256
 		-music n            sound volume 0..256
 		-joystick n         joystick controls starts at player n (0..7)
+
 
 	:: Controller Setup
 	
@@ -200,7 +201,7 @@ Welcome to PICO-8!
 			
 			Note that the width and height of the player can be configured, but should
 			normally match the size of the canvas it is displayed on (580,540 by default).
-			
+
 
 :: Screenshots, Videos and Cartridge Labels
 
@@ -217,6 +218,19 @@ Welcome to PICO-8!
 	
 	You can save a video at any time (it is always recording) -- use F8 just to reset
 	the video starting point if you want something less than 8 seconds long.
+
+
+:: Exporters / Importers 
+
+	To import or export the spritesheet as a .png:
+	
+		import("blah.png")    --  expects 128x128 png and colour-fits to the pico-8 palette
+		export("blah.png")    --  use folder() to locate the exported png
+	
+	To export sound effects as audio:
+	
+		export("blah.wav")    --  export the current SFX
+		export("blah%d.wav")  --  exports all of the SFXs as blah0.wav, blah1.wav .. blah63.wav
 
 
 :: Troubleshooting
@@ -252,6 +266,11 @@ Welcome to PICO-8!
 	CTRL-Z, Y to undo, redo
 	CTRL-F, G to search for text, repeat search
 	ALT-UP, DOWN to navigate to the previous, next function
+	
+	At the bottom right of the code editor you can see how many tokens have been used. One 
+	program can have a maximum of 8192 tokens. Each token is a word (e.g. variable name) or 
+	operator. Pairs of brackets and strings count as 1 token. commas, periods, local, and 
+	comments are not counted.
 	
 
 :: Sprite Editor
@@ -893,7 +912,7 @@ PICO-8 has 3 types of memory:
 	Technical note: // you probably don't need to know this
 	While using the editor, the data being modified is in cart rom, but api functions such as spr() 
 	and sfx() only operate on base ram. PICO-8 automatically copies cart rom to base ram in two cases: 
-		1. when a cartirdge is run()
+		1. when a cartridge is run()
 		2. when exiting any of the editor modes.
 	
 	
@@ -904,15 +923,16 @@ PICO-8 has 3 types of memory:
 	0x3000 gfx_props
 	0x3100 song
 	0x3200 sfx
-	0x4300 user-defined
-	0x5f00 draw state (+ unused) 
-	0x5f80 persistent cart data (64 bytes)
-	0x5fc0 unused
+	0x4300 user data
+	0x5e00 persistent cart data
+	0x5f00 draw state (+ unused)
 	0x6000 screen (8k)
 	
-	Colour format (gfx/screen) is 2 pixels per byte: low bits on the left
-	Map format is one byte per cel (normally used as a sprite index)
-
+	User data has no particular meaning and can be used for anything via memcpy(), peek() & poke().
+	Persistent cart data is mapped to 0x5e00..0x5eff but only stored if cartdata() has been called.
+	Colour format (gfx/screen) is 2 pixels per byte: low bits encode the left pixel of each pair.
+	Map format is one byte per cel, where the byte normally encodes a sprite index.
+	
 
 peek addr
 poke addr val
@@ -926,18 +946,20 @@ memcpy dest_addr source_addr len
 	Copy len bytes of base ram from source to dest
 	Sections can be overlapping
 
-reload dest_addr source_addr len
+reload dest_addr source_addr len [filename]
 
 	Same as memcpy, but copies from cart rom
 	if source_addr >= 0x4300, can read code ascii into ram
+	if filename specified, load data from a different cartridge
 
-cstore dest_addr source_addr len
+cstore dest_addr source_addr len [filename]
 
 	Same as memcpy, but copies from base ram to cart rom
 	cstore() is equivalent to cstore(0, 0, 0x4300)
 	Can use for writing tools to construct carts or to visualize the state 
 	of the map / spritesheet using the map editor / gfx editor.
 	if dest_addr >= 0x4300, can clobber program ascii on cart
+	if filename specified, save data to a different cartridge
 
 memset dest_addr val len
 
@@ -1057,6 +1079,39 @@ dset index value
 	VERSION HISTORY
 ------------------------------------------------------------------------------------------------------------
 
+	v0.1.4
+		
+		Added: spritesheet importing and exporting with import("blah.png"), export("blah.png")
+		Added: sfx exporting with export("blah%d.wav")
+		Added: External cartridge parameter for reload() and cstore()
+		Added: Persistent cartridge data mapped to 0x5e00
+		Added: Click token limit to toggle token & char limit display
+		Added: assert(), type()
+		Added: P to pause
+		Changed: code char limit: 64k (was 32k)
+		Changed: local declarations and semicolons not counted as tokens
+		Changed: Pairs of brackets and block delimitations count as one token
+		Changed: Only _update() or _draw() need to exist to enter main loop
+		Changed: Allow forward-slash in code editor
+		Changed: info() reports current (last loaded or saved) filename
+		Changed: html5 version compiled with NO_DYNAMIC_EXECUTION 
+		Fixed: Shift-drag-copy sprites -> paste only pastes 1x1
+		Fixed: ".." should count as one token
+		Fixed: Tracker displaying D instead of .
+		Fixed: Multi-line comments
+		Fixed: Crash on run when code close to char limit
+		Fixed: When over token limit, can not run any command
+		Fixed: Unused high bits in SFX section not saved in .p8 format
+		Fixed: Camera position memory mapping out of sync
+		Fixed: pico8.txt link broken in windows installer
+		Fixed: print() crashes when parameter is not a string or numbers
+		Fixed: Multi-line strings & escape chars mess up tokenizer and print()
+		Fixed: Joystick not responding when left stick is up to the left
+		Fixed: Alt-F4 saves screenshot before quitting
+		Fixed: Sprite editor mode button doesn't show fullscreen mode
+		Fixed: -sound parameter not working in html5 version 
+		
+		
 	v0.1.3
 	
 		Added: paste into commandline
