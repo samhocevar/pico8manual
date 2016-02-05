@@ -1,6 +1,6 @@
 ============================================================================================
 
- PICO-8 v0.1.4d
+ PICO-8 v0.1.5
  http://www.pico-8.com
  (c) Copyright 2014-2016 Lexaloffle Games LLP
  Author: Joseph White // hey@lexaloffle.com
@@ -371,14 +371,19 @@ Welcome to PICO-8!
 		
 		Effects: 0 none 1 slide 2 vibrato 3 drop 4 fade_in 5 fade_out 6 arp fast 7 arp slow
 		Arpeggio commands (6,7) iterate over groups of 4 notes at speed 2 and 4
-		
+	
+		Click and drag or shift-click to select and range of values.
+		Shift-click when navigating sfx to select multiple sounds to be copied and pasted.
 
+	
 :: Music Editor
 
 	Click/Right-click pattern numbers to indicate which sfx will be played for that pattern
 	Top right: use loop start, loop back and stop flags to control playback flow.
 	Space to start/stop
 
+	Shift-click pattern navigator to select a range of patterns that can be copied and pasted.
+	
 	
 ============================================================================================
 	Lua Syntax Primer
@@ -1078,6 +1083,19 @@ dset index value
 ------------------------------------------------------------------------------------------------------------
 	VERSION HISTORY
 ------------------------------------------------------------------------------------------------------------
+
+	v0.1.5
+	
+		Added: Raspberry Pi Build
+		Added: Keyboard configuration for player buttons (KEYCONFIG) 
+		Added: Music tracker select / copy / paste
+		Added: Single-level undo in audio tools
+		Added: Live preview of frequencies in sound editor
+		Fixed: Command history extends past last reboot
+		Fixed: Sfx exporter broken
+		Fixed: Slashes at end of path resolve to double slashes
+		Fixed: Load cart from commandline under Windows
+		
 
 	v0.1.4d
 	v0.1.4c
