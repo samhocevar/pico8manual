@@ -1,6 +1,6 @@
 ============================================================================================
 
- PICO-8 v0.1.5
+ PICO-8 v0.1.6
  http://www.pico-8.com
  (c) Copyright 2014-2016 Lexaloffle Games LLP
  Author: Joseph White // hey@lexaloffle.com
@@ -25,24 +25,25 @@ Welcome to PICO-8!
 
 :: Keys
 
-	Toggle Fullscreen: Alt+Enter or command-F
+	Toggle Fullscreen: Alt+Enter 
 	Quit: Alt+F4 or command-Q
 	Reload/Run/Restart cart: Ctrl+R
 	Quick-Save: Ctrl+S
 	P: Pause (while running)
-	Player 1 keys: Cursors + ZX / NM
-	Player 2 keys: SDFE + tab,Q / shift A
+	Player 1 defaults: Cursors + ZX / NM / CV
+	Player 2 defaults: SDFE + tab,Q / shift A
+	// use KEYCONFIG to change the defaults.
 	
 
 :: Specs
 
 	Display: 128x128, fixed 16 colour palette
-	Input: 6 buttons x 2 players
+	Input: 6 buttons
 	Cartridge size: 32k
 	Sound: 4 channel, 64 definable chip blerps
-	Code: Lua (max 15360 bytes of source code) 
+	Code: Lua (max 8192 tokens of code) 
 	Sprites: Single bank of 128 8x8 sprites (+128 shared)
-	Map: Single 128x32 (+128x32 shared)
+	Map: 128x32 8-bit cels (+128x32 shared)
 
 	
 :: Hello World
@@ -99,7 +100,7 @@ Welcome to PICO-8!
 	LOAD JELPI
 	RUN
 	
-	Press escape to stop the program, and once more to enter editing mode
+	Press escape to stop the program, and once more to enter editing mode.
 
 
 :: Filesystem
@@ -161,7 +162,9 @@ Welcome to PICO-8!
 		-sound n            sound volume 0..256
 		-music n            sound volume 0..256
 		-joystick n         joystick controls starts at player n (0..7)
-
+		-aspect n           set the aspect ratio. 420 means 1:1 (default), 560 for 4:3, 525 for 5:4 etc. 
+		-run filename       automatically load and run a cartridge
+		-splore             boot in splore mode
 
 	:: Controller Setup
 	
@@ -172,6 +175,8 @@ Welcome to PICO-8!
 		To generate a custom mapping string for your controller, use either the controllermap
 		program that comes with SDL2, or try http://www.generalarcade.com/gamepadtool/
 	
+		To set up which keyboard keys trigger joystick buttons presses, use KEYCONFIG.
+
 
 :: Sharing Cartridges / HTML5 Exporter
 
@@ -232,18 +237,41 @@ Welcome to PICO-8!
 		export("blah.wav")    --  export the current SFX
 		export("blah%d.wav")  --  exports all of the SFXs as blah0.wav, blah1.wav .. blah63.wav
 
+	// From commandline, you can skip the brackets and quotes: EXPORT BLAH.WAV 
 
-:: Troubleshooting
+
+:: Quirks of PICO-8
 
 	Common gotchas to watch out for:
 	
-	- Lua arrays are 1-based by default, not 0-based. FOREACH starts at T[1], not T[0].
-	- cos() and sin() take 0..1 instead of 0..PI*2, and sin() is inverted.
 	- The bottom half of the spritesheet and bottom half of the map occupy the same memory.
 		// Best use only one or the other if you're unsure how this works.
 	- PICO-8 numbers only go up to 32767.
+	- Lua arrays are 1-based by default, not 0-based. FOREACH starts at T[1], not T[0].
+	- cos() and sin() take 0..1 instead of 0..PI*2, and sin() is inverted.
+	- sgn(0) returns 1.
 	- Toggle fullscreen: use alt-enter on OSX (command-F is used for searching text).
 
+
+
+:: Splore
+
+	SPLORE is a built-in utility for browsing and organising both local and bbs (online)
+	cartridges. Type SPLORE [enter] to launch it, or launch pico-8 with -splore. 
+	
+	It is possible to control SPLORE entirely with a joystick:
+	LEFT and RIGHT to navigate lists of cartridges
+	UP AND DOWN to select items in each list
+	X,O or MENU to launch the cartridge
+	
+	While inside a cart, press MENU to favourite a cartridge or exit to splore.
+	If you're using a keyboard, it's also possible to press F to favourite an item
+	while it is selected in the cartridge list view.
+	
+	When viewing a list of BBS carts, use the top list item to re-download a list of
+	cartridges. If you are offline, the last downloaded list is displayed, and it is
+	still possible to play any cartridges you have downloaded.
+	
 
 ============================================================================================
 	Editor Modes
@@ -392,11 +420,14 @@ Welcome to PICO-8!
 PICO-8 programs are written using Lua syntax, but do not use the standard Lua library.
 The following is a brief summary of essential Lua syntax.
 
-For more details, or to find about proper Lua, see www.lua.org.
+For more details, or to find out about proper Lua, see www.lua.org.
 
 :: Comments
 
 	-- use two hyphens like this to ignore everything until the end of the line
+	--[[ multi-line
+	comments ]]
+	
 	
 :: Types and assignment
 
@@ -407,7 +438,7 @@ For more details, or to find about proper Lua, see www.lua.org.
 	B = FALSE
 	T = {1,2,3}
 	
-	Numbers in pico-8 are all 16:16 fixed point. They range from -32768.0 to 32767.99
+	Numbers in PICO-8 are all 16:16 fixed point. They range from -32768.0 to 32767.99
 	
 	Hexidecimal notation with optional fractional parts can be used:
 		0x11        -- 17
@@ -515,7 +546,7 @@ For more details, or to find about proper Lua, see www.lua.org.
 ============================================================================================
 
 	PICO-8 is built on the Lua scripting language, but does not include the Lua standard library.
-	Instead, a small api is offered in keeping with pico-8's minimal design and limited screen
+	Instead, a small api is offered in keeping with PICO-8's minimal design and limited screen
 	space. For an example program that uses most of the api functions, see /DEMOS/API.P8 
 	
 	Functions are written here as:
@@ -570,14 +601,14 @@ run
 	Can be called from inside a program to reset program.
 
 resume
-	Run from the existing cart state
+	Run from the existing cart state (flakey)
 
 reboot
 	Reboot the machine
 	Useful for starting a new project
 
 stat x
-	x:0 returns current memory useage (0..256)
+	x:0 returns current Lua memory useage (0..1024MB)
 	x:1 returns cpu useage for last frame (1.0 means 100% at 30fps)
 
 info
@@ -795,7 +826,8 @@ del t v
 
 all t
 
-	Used in FOR loops to iterate over all items in a table, in the order they were added.
+	Used in FOR loops to iterate over all items in a table (that have a 1-based integer index), 
+	in the order they were added.
 	
 		T = {11,12,13};
 		ADD(T,14)
@@ -837,10 +869,10 @@ pairs t
 btn [i [p]]
 
 	get button i state for player p (default 0)
-	i: 0..5: left right up down a_button b_button
-	p: player index 0 or 1
+	i: 0..5: left right up down button_o button_x
+	p: player index 0..7
 	
-	If no parameters supplied, returns a bitfield of all 12 button states.
+	If no parameters supplied, returns a bitfield of all 12 button states for player 0 & 1
 		// P0: bits 0..5  P1: bits 8..13
 	
 	Default keyboard mappings to player buttons:
@@ -851,7 +883,7 @@ btn [i [p]]
 btnp [i [p]]
 
 	Same as btn() but only true when the button was not pressed the last frame
-	btnp() also returns true every 4 frames after the button is held for 12 frames.
+	btnp() also returns true every 4 frames after the button is held for 15 frames.
 	
 	Useful for things like 'press a button to continue' or menu item movement.
 
@@ -869,9 +901,8 @@ sfx n [channel [offset]]
 	offset in notes (0..31)
 	
 	channel -1 (default) to automatically choose a channel that is not being used
-		// this will never clobber music playback
 		// if nothing plays, check you gave music() a channel_mask so that music
-		// playback doesn't hog all channels. (e.g. 1+2 for the first channels) 
+		// playback doesn't hog all channels. (e.g. 1+2 for the first two channels) 
 
 
 music [n [fade_len [channel_mask]]]
@@ -879,9 +910,11 @@ music [n [fade_len [channel_mask]]]
 	play music starting from pattern n (0..63)
 	n -1 to stop music
 	fade_len in ms (default: 0)
-	channel_mask specifies which channels to play music on
+	channel_mask specifies which channels to reserve for music only
 		e.g. to play on channels 0..2: 1+2+4 = 7
-		defaults to 15 -- all channels (1+2+4+8)
+		
+	Reserved channels can still be used to play sound effects on, but only when that
+	channel index is explicitly requested by sfx().
 
 
 --------------------------------------------------------------------------------------------------------
@@ -899,6 +932,7 @@ map cel_x cel_y sx sy cel_w cel_h [layer]
 	if layer is specified, only cels with the same flag number set are drawn
 		// Bitfield. So 0x5 means draw sprites with bit 0 and bit 2 set.
 		// defaults to all sprites
+	
 	exception: sprite 0 is always taken to mean empty.
 	
 	e.g. map(0,0, 20,20, 4,2)
@@ -912,15 +946,18 @@ PICO-8 has 3 types of memory:
 
 	1. base ram (32k): see layout below. Access with peek() poke() memcpy() memset()
 	2. cart rom: same layout as base ram until 0x4300. Copy from cart to base ram with reload()
-	3. lua ram (256k): compiled program + variables. Pay no attention to the man behind the curtain.
+	3. lua ram (1MB): compiled program + variables. Pay no attention to the man behind the curtain.
 
 	Technical note: // you probably don't need to know this
 	While using the editor, the data being modified is in cart rom, but api functions such as spr() 
-	and sfx() only operate on base ram. PICO-8 automatically copies cart rom to base ram in two cases: 
-		1. when a cartridge is run()
-		2. when exiting any of the editor modes.
-	
-	
+	and sfx() only operate on base ram. PICO-8 automatically copies cart rom to base ram (i.e.
+	calls reload()) in 3 cases:
+
+		1. When a cartridge is loaded (from 0.1.6)
+		2. When a cartridge is run
+		3. When exiting any of the editor modes
+
+
 :: Base ram memory layout
 	0x0    gfx
 	0x1000 gfx2/map2 (shared)
@@ -929,15 +966,17 @@ PICO-8 has 3 types of memory:
 	0x3100 song
 	0x3200 sfx
 	0x4300 user data
-	0x5e00 persistent cart data
-	0x5f00 draw state (+ unused)
+	0x5e00 persistent cart data (256 bytes)
+	0x5f00 draw state
+	0x5f40 hardware state
+	0x5f80 gpio pins (128 bytes) // in development
 	0x6000 screen (8k)
-	
+
 	User data has no particular meaning and can be used for anything via memcpy(), peek() & poke().
 	Persistent cart data is mapped to 0x5e00..0x5eff but only stored if cartdata() has been called.
 	Colour format (gfx/screen) is 2 pixels per byte: low bits encode the left pixel of each pair.
 	Map format is one byte per cel, where the byte normally encodes a sprite index.
-	
+
 
 peek addr
 poke addr val
@@ -963,9 +1002,13 @@ cstore dest_addr source_addr len [filename]
 	cstore() is equivalent to cstore(0, 0, 0x4300)
 	Can use for writing tools to construct carts or to visualize the state 
 	of the map / spritesheet using the map editor / gfx editor.
-	if dest_addr >= 0x4300, can clobber program ascii on cart
-	if filename specified, save data to a different cartridge
-
+	The code section ( >= 0x4300) is protected and can not be written to.
+	
+	If a filename is specified, the data is written directly to that
+	cartridge on disk. Up to 64 cartridges can be written in one session.
+	See the 'Cartridge Data' section for additional notes on using cstore.
+	
+	
 memset dest_addr val len
 
 	Set len bytes to val
@@ -1004,7 +1047,7 @@ atan2 dx dy
 
 sqrt x
 
-	Return the square root
+	Return the square root of x
 	
 abs x
 
@@ -1050,16 +1093,28 @@ Bitwise operations
 
 
 --------------------------------------------------------------------------------------------
-	Cartride Data
+	Cartridge Data
 --------------------------------------------------------------------------------------------
 
-	Each cartidge is able to store 64 numbers (256 bytes) of persistent data.
-	This can be used for this things like high scores or to save player progress.
+	Each cartidge is able to store 64 numbers (256 bytes) of persistent data 
+	on the user's PICO-8 (rather than on the cart itself). This can be used as
+	a lightweight way to store things like high scores or to save player progress.
 	
+	If you need more than 256 bytes, it is also possible to write directly to the
+	cartridge using cstore(). The disadvantage is that the data is tied to that
+	particular version of the cartridge. e.g. if a game is updated, players will
+	lose their savegames.
+	
+	Another alternative is to write directly to a second cartridge by specifying
+	a fourth parameter to cstore(). This requires a cart swap though (so is 
+	slightly slower), and leaves data-cart litter when run from a local folder.
+
+
 cartdata id
 
-	Call this once on cartridge load. id is a string up to 64 characters long, and should be
-	unusual enough that other cartridges do not accidentally use the same id.
+	Call this once on cartridge load. id is a string up to 64 characters long, and 
+	should be unusual enough that other cartridges do not accidentally use the
+	same id.
 	
 	e.g. cartdata("zep_jelpi")
 	
@@ -1067,8 +1122,12 @@ cartdata id
 
 	returns true iff data was loaded.
 
-	cartdata can not be called more than once per cartridge execution
-
+	cartdata can not be called more than once per cartridge execution.
+	
+	Once a cartdata id has been set, the area of memory 0x5e00..0x5eff is mapped 
+	to permanent storage, and can either be accessed directly or via dget/dset.
+	
+	
 dget index
 
 	Get the number stored at index (0..63)
@@ -1079,10 +1138,41 @@ dset index value
 	Set the number stored at index (0..63)
 	use this only after you have called cartdata()
 	
+	There is no need to flush written data -- it is automatically
+	saved to permantent storage even if POKE()'ed directly.
+	
 
 ------------------------------------------------------------------------------------------------------------
 	VERSION HISTORY
 ------------------------------------------------------------------------------------------------------------
+
+	v0.1.6
+
+		Added: SPLORE local & bbs cartridge explorer
+		Added: setmetatable(), cocreate(), coresume(), costatus(), yield()
+		Added: Spinning cart icon to show when a cart is swapped / written to
+		Added: Permanent storage when carts played in a browser
+		Added: Adjustable aspect ratio (-aspect 420 for 1:1)
+		Changed: Lua memory limit: 1024k (was 512k)
+		Changed: Music channel now resumes after being clobbered by an sfx 
+		Changed: Arpeggios double speed when SFX speed <= 8
+		Changed: Exceeding compressed code limit does not block saving in .p8 format 
+		Changed: spr() half as expensive, to be consistent with map()
+		Changed: Fractional hex number notation: 0x0.3 == 0x0.3000, (was 0x0.0003)
+		Changed: : operator doesn't count as an extra token (same as .)
+		Changed: cstore() writes directly to disk
+		Changed: cstore(), reload() return number of bytes read / written
+		Changed: save() while running does nothing. (use cstore() instead)
+		Changed: load() while running loads and runs the specified cartridge 
+		Fixed: Small pops in audio mixer caused by sound wave discontinuities
+		Fixed: HTML5-exported sound clicks badly under Chrome
+		Fixed: Display palette is not oberserved when exporting GIFs
+		Fixed: Rapid keypresses causes duplicate readings in tracker & text editor
+		Fixed: += inside comments breaks preprocessor
+		Fixed: sspr() cpu cost the same when clipped
+		Fixed: cartdata() with bad parameters crashes
+		Fixed: EXPORT from commandline can not be used without brackets and quotes
+		
 
 	v0.1.5
 	
@@ -1124,6 +1214,8 @@ dset index value
 		Changed: Allow forward-slash in code editor
 		Changed: info() reports current (last loaded or saved) filename
 		Changed: html5 version compiled with NO_DYNAMIC_EXECUTION 
+		Changed: can only cstore up to 64 different files in one session
+		Changed: load() automatically copies data section of cart to base ram
 		Fixed: Shift-drag-copy sprites -> paste only pastes 1x1
 		Fixed: ".." should count as one token
 		Fixed: Tracker displaying D instead of .
