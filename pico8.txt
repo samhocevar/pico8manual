@@ -1,6 +1,6 @@
 ============================================================================================
 
- PICO-8 v0.1.6
+ PICO-8 v0.1.7
  http://www.pico-8.com
  (c) Copyright 2014-2016 Lexaloffle Games LLP
  Author: Joseph White // hey@lexaloffle.com
@@ -149,8 +149,12 @@ Welcome to PICO-8!
 		OSX: /Users/Yourname/Library/Application Support/pico-8/config.txt
 		Linux: ~/.lexaloffle/pico-8/config.txt
 
+		Use the -home switch (below) to use a different path to store config.txt and other data.
+		
 
 	:: Commandline parameters
+	
+		// note: these override settings found in config.txt
 	
 		pico-8 [switches] [filename.p8]
 	
@@ -165,7 +169,8 @@ Welcome to PICO-8!
 		-aspect n           set the aspect ratio. 420 means 1:1 (default), 560 for 4:3, 525 for 5:4 etc. 
 		-run filename       automatically load and run a cartridge
 		-splore             boot in splore mode
-
+		-home path          set the path to store config.txt and other user data files
+		
 	:: Controller Setup
 	
 		PICO-8 uses the SDL2 controller configuration scheme. It will detect common controllers
@@ -292,7 +297,8 @@ Welcome to PICO-8!
 	Hold shift to select (or click and drag with mouse)
 	CTRL-X, C, V to cut copy or paste selected
 	CTRL-Z, Y to undo, redo
-	CTRL-F, G to search for text, repeat search
+	CTRL-F to search for text
+	CTRL-G to repeat the last search again
 	ALT-UP, DOWN to navigate to the previous, next function
 	
 	At the bottom right of the code editor you can see how many tokens have been used. One 
@@ -1069,6 +1075,23 @@ Bitwise operations
 	shl  x y
 	shr  x y
 
+--------------------------------------------------------------------------------------------------------
+	Custom Menu Items
+--------------------------------------------------------------------------------------------------------
+
+menuitem index [label callback]
+
+	Add an extra item to the pause menu
+	
+	Index should be 1..5 and determines the order each menu item is displayed
+	label should be a string up to 16 characters long
+	callback is a function called when the item is selected by the users
+	
+	When no label or function is supplied, the menu item is removed
+	
+	example:
+	menuitem(1, "restart puzzle", function() reset_puzzle() sfx(10) end)
+	
 
 --------------------------------------------------------------------------------------------------------
 	Strings
@@ -1146,6 +1169,19 @@ dset index value
 	VERSION HISTORY
 ------------------------------------------------------------------------------------------------------------
 
+	v0.1.7
+	
+		Added: menuitem()
+		Added: button glyphs in code (shift-L, R, U, D, X, O)
+		Added: Customisable data directory (e.g. pico8 -home mydata)
+		Added: Web gpio pins: read and write pico8_gpio[] in javscript 
+		Fixed: SPLORE search doesn't reset
+		Fixed: Splore skipping 33rd cart listing after loading more items
+		Fixed: Crash when selecting a local binary file in splore
+		Fixed: Semicolon can't be used as a list or statement separator 
+		Fixed: Exported html can not cstore self
+		
+		
 	v0.1.6
 
 		Added: SPLORE local & bbs cartridge explorer
