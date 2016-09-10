@@ -1,6 +1,6 @@
 ============================================================================================
 
- PICO-8 v0.1.8
+ PICO-8 v0.1.9
  http://www.pico-8.com
  (c) Copyright 2014-2016 Lexaloffle Games LLP
  Author: Joseph White // hey@lexaloffle.com
@@ -9,7 +9,8 @@
  	SDL2 http://www.libsdl.org
  	Lua 5.2 http://www.lua.org  // see license.txt
  	GIFLIB http://giflib.sourceforge.net/
- 
+ 	WiringPi http://wiringpi.com/
+
 ============================================================================================
 
 Welcome to PICO-8!
@@ -29,9 +30,10 @@ Welcome to PICO-8!
 	Quit: Alt+F4 or command-Q
 	Reload/Run/Restart cart: Ctrl+R
 	Quick-Save: Ctrl+S
-	P: Pause (while running)
+	Mute/Unmute: Ctrl+M
 	Player 1 defaults: Cursors + ZX / NM / CV
 	Player 2 defaults: SDFE + tab,Q / shift A
+	Enter for pause menu (while running)
 	// use KEYCONFIG to change the defaults.
 	
 
@@ -158,21 +160,26 @@ Welcome to PICO-8!
 	
 		pico-8 [switches] [filename.p8]
 	
-		-run                boot filename.p8 on startup
-		-width n            set the window or screen width and adjust scale to fit if not specified
-		-height n           set the window or screen height and adjust scale to fit if not specified
-		-scale n            set the size of each PICO-8 pixel. "-scale 3" gives pixels rendered at 3x3
-		-windowed n         set windowed mode off (0) or on (1)
-		-sound n            sound volume 0..256
-		-music n            sound volume 0..256
-		-joystick n         joystick controls starts at player n (0..7)
-		-aspect n           set the aspect ratio. 420 means 1:1 (default), 560 for 4:3, 525 for 5:4 etc. 
-		-run filename       automatically load and run a cartridge
-		-splore             boot in splore mode
-		-home path          set the path to store config.txt and other user data files
-		-gif_len n          set the maximum gif length in seconds (1..120)
-		
-		
+		-run                 boot filename.p8 on startup
+		-width n             set the window width 
+		-height n            set the window height 
+		-windowed n          set windowed mode off (0) or on (1)
+		-sound n             sound volume 0..256
+		-music n             sound volume 0..256
+		-joystick n          joystick controls starts at player n (0..7)
+		-pixel_perfect n     1 for unfiltered screen stretching at integer scales (on by default)
+		-draw_rect x,y,w,h   absolute window coordinates and size to draw pico-8's screen 
+		-run filename        automatically load and run a cartridge
+		-splore              boot in splore mode
+		-home path           set the path to store config.txt and other user data files
+		-desktop path        set a location for screenshots and gifs to be saved
+		-screenshot_scale n  scale of screenshots.  default: 3 (368x368 pixels)
+		-gif_scale n         scale of gif captures. default: 2 (256x256 pixels)
+		-gif_len n           set the maximum gif length in seconds (1..120)
+		-gui_theme n         use 1 for a higher contrast editor colour scheme
+		-timeout n           how many seconds to wait before downloads timeout (default: 30)
+
+
 	:: Controller Setup
 	
 		PICO-8 uses the SDL2 controller configuration scheme. It will detect common controllers
@@ -311,6 +318,7 @@ Welcome to PICO-8!
 	CTRL-Z, Y to undo, redo
 	CTRL-F to search for text
 	CTRL-G to repeat the last search again
+	CTRL-UP, DOWN to jump to start or end of the program
 	ALT-UP, DOWN to navigate to the previous, next function
 	
 	At the bottom right of the code editor you can see how many tokens have been used. One 
@@ -673,6 +681,7 @@ save filename
 	
 	Once a cartridge has been loaded or saved, it can also be quick-saved with CTRL-S
 
+	Use a filename of "@clip" to load or save to the host's clipboard.
 
 	:: Saving .png carts with a text label and preview image
 	
@@ -687,7 +696,7 @@ save filename
 	
 	:: Code size restrictions for .png format
 	
-	When saving in .png format, the comrpessed size of the code must be less than 15360 bytes. To find 
+	When saving in .png format, the compressed size of the code must be less than 15360 bytes. To find 
 	out the current size of your code, use the INFO command. The compressed size limit is not enforced
 	for .p8 format. In most cases you don't need to worry about the compressed size, as the token 
 	limit (8192) will be reached first.
@@ -725,10 +734,29 @@ flip
 	If your program does not call flip before a frame is up, and a _draw() callback
 	is not in progress, the current contents of the back buffer are copied to screen.
 
-printh str
+printh str [filename] [overwrite]
 	Print a string to host operating system's console for debugging.
 	
+	If filename is set, append the string to a file on the host operating system
+		// (in the current directory -- use FOLDER to view)
+	Setting overwrite to true causes that file to be overwritten rather than appended.
+	Use a filename of "@clip" to write to the host's clipboard.
+		// use stat(4) to read the clipboard, but the contents of the clipboard are only
+		// available after user presses CTRL-V during runtime (for security reasons).
+
+
+stat x
+
+	Get system status where x is:
 	
+	0 Memory useage
+	1 CPU used since last flip (1.0 == 100% CPU)
+	4 Clipboard contents (after user has pressed CTRL-V)
+	
+	16..19 Index of currently playing SFX on channels 0..3
+	20..23 Note number (0..31) on channel 0..3
+
+
 --------------------------------------------------------------------------------------------
 	Program Structure
 --------------------------------------------------------------------------------------------
@@ -1088,7 +1116,7 @@ PICO-8 has 3 types of memory:
 	0x5e00 persistent cart data (256 bytes)
 	0x5f00 draw state
 	0x5f40 hardware state
-	0x5f80 gpio pins (128 bytes) // in development
+	0x5f80 gpio pins (128 bytes)
 	0x6000 screen (8k)
 
 	User data has no particular meaning and can be used for anything via memcpy(), peek() & poke().
@@ -1288,12 +1316,96 @@ dset index value
 	
 	There is no need to flush written data -- it is automatically
 	saved to permantent storage even if POKE()'ed directly.
+
+
+--------------------------------------------------------------------------------------------
+	GPIO
+--------------------------------------------------------------------------------------------
+
+	GPIO stands for "General Purpose Input Output", and allows machines to comunicate with 
+	each other. PICO-8 maps bytes in the range 0x5f80..0x5fff to gpio pins that can be
+	poke()ed (to output a value -- e.g. to make an LED light up) or peek()ed (e.g. to read
+	the state of a switch).
 	
-
-------------------------------------------------------------------------------------------------------------
+	GPIO means different things for different host platforms:
+	
+	CHIP:         0x5f80..0x5f87 mapped to xio-p0..xio-p7
+	Pocket CHIP:  0x5f82..0x5f87 mapped to GPIO1..GPIO6
+		// xio-p0 & p1 are exposed inside the prototyping area inside the case.
+	Raspberry Pi: 0x5f80..0x5f8f mapped to wiringPi pins 0..7
+		// see http://wiringpi.com/pins/ for mappings on different models
+	
+	CHIP and Raspberry Pi values are all digital: 0 (LOW) and 255 (HIGH)
+	
+	Note that to have access to gpio pins, you may need to run pico8 as root: 
+	
+	sudo pico8
+	
+	A simple program to blink any LEDs attached on and off:
+	
+	t = 0
+	function _draw()
+	 cls(5)
+	 for i=0,7 do
+	  val = 0
+	  if (t % 2 < 1) val = 255
+	  poke(0x5f80 + i, val)
+	  circfill(20+i*12,64,4,val/11)
+	 end
+	 t += 0.1
+	end
+	
+	:: HTML
+	
+	Cartridges exported as HTML / .js use a global array of integers (pico8_gpio) to 
+	represent gpio pins. The shell HTML should define the array:
+	
+	var pico8_gpio = Array(128);
+	
+	
+--------------------------------------------------------------------------------------------
 	VERSION HISTORY
-------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 
+	v0.1.9
+	
+		Added: Copy and paste sprites and whole cartridges directly to BBS posts 
+		Added: JAM category in splore
+		Added: GPIO support for Raspberry Pi
+		Added: Read clipboard using stat(4) after user presses CTRL-V
+		Added: printh() can optionally write to a file or the host clipboard
+		Added: Editor tool information and tips shown on mouseover
+		Added: Set desktop path with -desktop (screenshots and gifs are saved here)
+		Added: Warning on saving .p8 when compressed code size exceeds .p8.png limit
+		Added: Alternative editor colours // config.txt: gui_theme 1
+		Added: Dotted line every 8 rows in song view
+		Added: -screenshot_scale (default: 3) and -gif_scale (default: 2)
+		Added: Can use ctrl-up, ctrl-down to jump to start and end of code
+		Added: CTRL-M to mute/unmute sound
+		Added: HTML5-exported carts support 60fps
+		Added: Timeout switch for splore downloads: -timeout
+		Changed: Glyph characters typed with alt + a..z 
+		Changed: stat(0) does not include allocations waiting to be garbage collected
+		Changed: Unfiltered screen stretching at integer scales by default
+		Changed: Removed -aspect and -scale settings (use draw_rect instead)
+		Fixed: -home has no effect under Windows
+		Fixed: Sometimes frame skipping starts before CPU useage has reached 100%
+		Fixed: Double-speed BTNP() timing in 60fps mode
+		Fixed: Exported HTML fails when _update60 is used instead of _update
+		Fixed: Can't copy and paste button glyphs
+		Fixed: Lines containing glyphs do not scroll far enough horizontally 
+		Fixed: Loading .p8 renamed as .p8.png from splore freezes
+		Fixed: Bucketfill in map doesn't sync to shared memory
+		Fixed: fset fails when de-setting flags
+		Fixed: Syntax error when beginning with the form: IF (..) [OR|AND]\n  
+		Fixed: cls() costs twice as much cpu as it should
+		Fixed: wav file exporter missing some data / writing truncated buffers
+		Fixed: Entering new notes in song view doesn't observe current volume, instrument
+		Fixed: alt-tab sometimes generates alt character text entry event
+		Fixed: Resuming a cancelled download in splore causes crash
+		Fixed: Controller attributes in log.txt always shown as -1	
+		
+		
 	v0.1.8
 	
 		Added: 60fps support
@@ -1307,6 +1419,8 @@ dset index value
 		Added: Pre-installed selection of BBS cart (use INSTALL_GAMES)
 		Added: Warning when saving .p8.png with no label 
 		Added: (OSX) logging to ~/Library/Logs (viewable with Console.app)
+		Added: -pixel_perfect switch (on by default)
+		Added: -draw_rect switch
 		Changed: Can not CTRL-S save over a loaded bbs cart
 		Changed: Only .p8 files listed by dir() and by splore
 		Changed: Command history increased to 256
@@ -1544,7 +1658,6 @@ dset index value
 		Added: demo cart: hello.p8 (use install_demos)
 		Added: CTRL-R from anywhere to run cart or restart cart
 		Added: use a,s to select colour in gfx editor
-		Added: black background behind
 		Added: consistent operation cpu costs
 		Added: btn(), btnp() with no arguments returns bitfield
 		Added: fget(id) returns bitfield of that sprite's flags
