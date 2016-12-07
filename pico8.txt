@@ -1,6 +1,6 @@
 ============================================================================================
 
- PICO-8 v0.1.9b
+ PICO-8 v0.1.10
  http://www.pico-8.com
  (c) Copyright 2014-2016 Lexaloffle Games LLP
  Author: Joseph White // hey@lexaloffle.com
@@ -221,6 +221,18 @@ Welcome to PICO-8!
 			Note that the width and height of the player can be configured, but should
 			normally match the size of the canvas it is displayed on (580,540 by default).
 
+			Up to 16 cartridges can be bundled together by passing them to EXPORT:
+			
+			EXPORT FOO.HTML DAT1.P8 DAT2.P8 GAME2.P8
+			
+			During runtime, the extra carts can be accessed as if they were local files:
+			
+			RELOAD(0,0,0x2000,"DAT1.P8") -- load spritesheet from DAT1.P8
+			LOAD("GAME2.P8") -- load and run another cart
+			
+			Only .p8 files are supported, and the filenames must be specified with the .p8 
+			extension included.
+
 
 :: Screenshots, Videos and Cartridge Labels
 
@@ -232,8 +244,6 @@ Welcome to PICO-8!
 		F9 Save GIF video to desktop (max: 8 seconds by default)
 		
 		// if F6..F9 are not available on your system, use F1..F4 or CTRL-6..9
-	
-	Cartridge label is saved when using save() with p8.png format.
 	
 	You can save a video at any time (it is always recording) -- use F8 just to reset
 	the video starting point if you want something less than 8 seconds long.
@@ -320,6 +330,9 @@ Welcome to PICO-8!
 	CTRL-G to repeat the last search again
 	CTRL-UP, DOWN to jump to start or end of the program
 	ALT-UP, DOWN to navigate to the previous, next function
+	CTRL-LEFT, RIGHT to jump by word
+	CTRL-D to duplicate current line
+	TAB to indent a selection (shift to un-indent)
 	
 	At the bottom right of the code editor you can see how many tokens have been used. One 
 	program can have a maximum of 8192 tokens. Each token is a word (e.g. variable name) or 
@@ -327,6 +340,7 @@ Welcome to PICO-8!
 	colons, ENDs, and comments are not counted.
 	
 	To enter special characters that represent buttons, use SHIFT-L,R,U,D,O,X
+	Or press CTRL-K to toggle glyph mode
 	
 
 :: Sprite Editor
@@ -752,6 +766,17 @@ Welcome to PICO-8!
 		20..23 Note number (0..31) on channel 0..3
 
 
+	extcmd x
+	
+		Special system command, only works when running a local cart. 
+		Where x is a string:
+		
+		"label"  set cart label
+		"screen" save a screenshot
+		"rec"    set video start point
+		"video"  save a .gif
+
+
 --------------------------------------------------------------------------------------------
 	Program Structure
 --------------------------------------------------------------------------------------------
@@ -1149,7 +1174,8 @@ Welcome to PICO-8!
 		If a filename is specified, the data is written directly to that
 		cartridge on disk. Up to 64 cartridges can be written in one session.
 		See the 'Cartridge Data' section for additional notes on using cstore.
-	
+		
+		
 	memset dest_addr val len
 
 		Set len bytes to val
@@ -1309,7 +1335,7 @@ Welcome to PICO-8!
 		use this only after you have called cartdata()
 	
 		There is no need to flush written data -- it is automatically
-		saved to permantent storage even if POKE()'ed directly.
+		saved to permanent storage even if POKE()'ed directly.
 
 
 --------------------------------------------------------------------------------------------
@@ -1360,6 +1386,31 @@ Welcome to PICO-8!
 --------------------------------------------------------------------------------------------
 	VERSION HISTORY
 --------------------------------------------------------------------------------------------
+
+
+	v0.1.10
+	
+		Added: Multi-cart export in html
+		Added: Cart reset glitch
+		Added: Demo carts: bounce, sort
+		Added: .p8 format can now store cart labels
+		Added: Splore navigation keys: pageup/down, home, end
+		Added: Splore useage hint shown on empty favourites list
+		Added: Warning on boot when data folder is read-only or can't be created
+		Added: Pressing tab with code selected indents those lines (shift-tab to un-indent)
+		Added: Double click word to select it
+		Added: Trigger screenshot/video/label capture from inside program: extcmd()
+		Changed: CTRL+left/right in code editor skips to end of word or span of non-whitespace
+		Changed: When a cart terminates from splore, button press is required to continue
+		Changed: load("@clip") can only be called from commandline (security)
+		Fixed: Can over-allocate host memory if exceed it within one frame
+		Fixed: atan2(-1, -32768) crash, and error for small values of dy
+		Fixed: (Web) using cstore() on self causes unloadable cart (bug introduced in 0.1.8?)
+		Fixed: (web) Pressing ctrl-v crashes the player (should do nothing)
+		Fixed: (Raspberry Pi) WiringPi library required in static build
+		Fixed: (Raspberry Pi) Crash on exit when launching via desktop icon
+		Fixed: (Raspberry Pi) keyboard input broken (observed on raspi2s)
+
 
 	v0.1.9b
 
