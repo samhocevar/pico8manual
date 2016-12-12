@@ -1,6 +1,6 @@
 ============================================================================================
 
- PICO-8 v0.1.10b
+ PICO-8 v0.1.10c
  http://www.pico-8.com
  (c) Copyright 2014-2016 Lexaloffle Games LLP
  Author: Joseph White // hey@lexaloffle.com
@@ -1386,6 +1386,10 @@ Welcome to PICO-8!
 --------------------------------------------------------------------------------------------
 	VERSION HISTORY
 --------------------------------------------------------------------------------------------
+
+
+	v0.1.10c
+		Fixed: atan flips sign for very negative values of x close to zero
 
 
 	v0.1.10b
