@@ -1,6 +1,6 @@
 ============================================================================================
 
- PICO-8 v0.1.11
+ PICO-8 v0.1.11b
  http://www.pico-8.com
  (c) Copyright 2014-2017 Lexaloffle Games LLP
  Author: Joseph White // hey@lexaloffle.com
@@ -1643,6 +1643,12 @@ Welcome to PICO-8!
 --------------------------------------------------------------------------------------------
 	VERSION HISTORY
 --------------------------------------------------------------------------------------------
+	
+	v0.1.11b
+	
+		Fixed: Preprocessor bug regressions: "if (..) or", "a.b -= c - d"
+		Fixed: Crash when pressing menu button on an empty favourites list
+
 
 	v0.1.11
 		
