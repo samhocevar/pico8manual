@@ -1,6 +1,6 @@
 ============================================================================================
 
- PICO-8 v0.1.11b
+ PICO-8 v0.1.11c
  http://www.pico-8.com
  (c) Copyright 2014-2017 Lexaloffle Games LLP
  Author: Joseph White // hey@lexaloffle.com
@@ -194,26 +194,28 @@ Welcome to PICO-8!
 		
 		pico-8 [switches] [filename.p8]
 		
-		-width n             set the window width 
-		-height n            set the window height 
-		-windowed n          set windowed mode off (0) or on (1)
-		-sound n             sound volume 0..256
-		-music n             sound volume 0..256
-		-joystick n          joystick controls starts at player n (0..7)
-		-pixel_perfect n     1 for unfiltered screen stretching at integer scales (on by default)
-		-draw_rect x,y,w,h   absolute window coordinates and size to draw pico-8's screen 
-		-run filename        load and run a cartridge
-		-x filename  		 execute a PICO-8 cart headless and then quit
-		-p param_str         pass a parameter string to the specified cartridge
-		-splore              boot in splore mode
-		-home path           set the path to store config.txt and other user data files
-		-desktop path        set a location for screenshots and gifs to be saved
-		-screenshot_scale n  scale of screenshots.  default: 3 (368x368 pixels)
-		-gif_scale n         scale of gif captures. default: 2 (256x256 pixels)
-		-gif_len n           set the maximum gif length in seconds (1..120)
-		-gui_theme n         use 1 for a higher contrast editor colour scheme
-		-timeout n           how many seconds to wait before downloads timeout (default: 30)
-		-software_blit n     use software blitting mode off (0) or on (1)
+		-width n                 set the window width 
+		-height n                set the window height 
+		-windowed n              set windowed mode off (0) or on (1)
+		-sound n                 sound volume 0..256
+		-music n                 sound volume 0..256
+		-joystick n              joystick controls starts at player n (0..7)
+		-pixel_perfect n         1 for unfiltered screen stretching at integer scales (on by default)
+		-draw_rect x,y,w,h       absolute window coordinates and size to draw pico-8's screen 
+		-run filename            load and run a cartridge
+		-x filename  		     execute a PICO-8 cart headless and then quit
+		-p param_str             pass a parameter string to the specified cartridge
+		-splore                  boot in splore mode
+		-home path               set the path to store config.txt and other user data files
+		-desktop path            set a location for screenshots and gifs to be saved
+		-screenshot_scale n      scale of screenshots.  default: 3 (368x368 pixels)
+		-gif_scale n             scale of gif captures. default: 2 (256x256 pixels)
+		-gif_len n               set the maximum gif length in seconds (1..120)
+		-gui_theme n             use 1 for a higher contrast editor colour scheme
+		-timeout n               how many seconds to wait before downloads timeout (default: 30)
+		-software_blit n         use software blitting mode off (0) or on (1)
+		-foreground_sleep_ms n   how many milliseconds to sleep between frames.
+		-background_sleep_ms n   how many milliseconds to sleep between frames when running in background
 
 
 :: Controller Setup
@@ -306,12 +308,19 @@ Welcome to PICO-8!
 		
 		> EXPORT FOO.BIN
 		
-		By default, the cartridge label is used as an icon. To specificy an icon from
-		the sprite sheet, use -i and optionally -s to control the size. For example, to
-		use a 2x2 sprite starting at index 32 in the spritesheet:
+		By default, the cartridge label is used as an icon with no transparency. To 
+		specificy an icon from the sprite sheet, use -i and optionally -s and/or -c 
+		to control the size and transparency.
 		
-		> EXPORT FOO.BIN -I 32 -S 2
+			-I N  Icon index N with a default transparent colour of 0 (black).
+			-S N  Size NxN sprites. Size 3 would be produce a 24x24 icon.
+			-C N  Treat colour N as transparent. Use 16 for no transparency.
+
+		For example, to use a 2x2 sprite starting at index 32 in the spritesheet, 
+		using colour 12 as transparent, and bundling an extra cartrige C0.P8:
 		
+			> EXPORT FOO.BIN -I 32 -S 2 -C 12
+
 	
 :: Exporting Multiple Cartridges
 
@@ -503,7 +512,7 @@ Welcome to PICO-8!
 	
 		A play speed (SPD) : the number of 'ticks' to play each note for.
 			// This means that 1 is fastest, 3 is 3x as slow, etc.
-		
+
 		Loop start and end : this is the note index to loop back and to
 			// Looping is turned off when the start index >= end index
 	
@@ -595,6 +604,32 @@ Welcome to PICO-8!
 		and pasted with CTRL-C and CTRL-V. When pasting into another cartridge, the SFX 
 		that each pattern points to will also be pasted (possibly with a different index) 
 		if it does not already exist.
+
+
+	:: SFX Instruments
+
+		In addition to the 8 built-in instruments, custom instruments can be defined using 
+		the first 8 SFX. Use the toggle button to the right of the instruments to select an 
+		index, which will show up in the instrument channel as green instead of pink.
+
+		When an SFX instrument note is played, it essentially triggers that SFX, but alters 
+		the note's attributes:
+
+			Pitch is added relative to C2
+			Volume is multiplied
+			Effects are applied on top of the SFX instrument's effects
+
+		For example, a simple tremelo effect could be implemented by defining an instrument 
+		in SFX 0 that rapidly alternates between volume 5 and 2. When using this instrument
+		to play a note, the volume can further be altered as usual (via the volume channel
+		or using the fade in/out effects). In this way, SFX instruments can be used to control 
+		combinations of detailed changes in volume, pitch and texture.
+
+		SFX instruments are only retriggered when the pitch changes, or the previous note
+		has zero volume. This is useful for instruments that change more slowly over time.
+		For example: a bell that gradually fades out. To invert this behaviour, effect 3
+		(normally 'drop') can be used when triggering the note. All other effect values	have 
+		their usual meaning when triggering SFX instruments.	
 
 	
 ============================================================================================
@@ -722,8 +757,8 @@ Welcome to PICO-8!
 		IF (NOT B) I=1 J=2
 	
 		-- is equivalent to: IF (NOT B) THEN I=1 J=2 END
-		-- note that the condition must be surrounded by brackets.
-	
+		-- everything must be written on the same line, and with the condition in brackets
+		
 	
 		2. unary math operators
 	
@@ -832,12 +867,20 @@ Welcome to PICO-8!
 
 		Get system status where x is:
 
-		0 Memory useage (0..1024)
-		1 CPU used since last flip (1.0 == 100% CPU at 30fps)
-		4 Clipboard contents (after user has pressed CTRL-V)
-	
-		16..19 Index of currently playing SFX on channels 0..3
-		20..23 Note number (0..31) on channel 0..3
+		0  Memory useage (0..1024)
+		1  CPU used since last flip (1.0 == 100% CPU at 30fps)
+		4  Clipboard contents (after user has pressed CTRL-V)
+		6  Parameter string
+		7  Current framerate
+		
+		16..19  Index of currently playing SFX on channels 0..3
+		20..23  Note number (0..31) on channel 0..3
+		24      Currently playing pattern index
+		25      Total patterns played
+		26      Ticks played on current pattern
+
+		80..85  UTC time: year, month, day, hour, minute, second
+		90..95  Local time
 
 
 	extcmd x
@@ -880,6 +923,11 @@ Welcome to PICO-8!
 	
 		- both _update60() and _draw() are called at 60fps
 		- half the PICO-8 CPU is available per frame before dropping down to 30fps
+		
+		Note that not all host machines are capable of running at 60fps. Older machines,
+		and / or web versions might also request PICO-8 to run at 30 fps (or 15 fps), even
+		when the PICO-8 CPU is not over capacity. In this case, multiple _update60 calls
+		are made for every _draw call in the same way.
 
 
 --------------------------------------------------------------------------------------------
@@ -1132,7 +1180,7 @@ Welcome to PICO-8!
 
 	btn [i [p]]
 
-		get button i state for player p (default 0)
+		get button i state for player p (default 0) 
 		i: 0..5: left right up down button_o button_x
 		p: player index 0..7
 	
@@ -1146,11 +1194,13 @@ Welcome to PICO-8!
 
 	btnp [i [p]]
 
-		Same as btn() but only true when the button was not pressed the last frame
-		btnp() also returns true every 4 frames after the button is held for 15 frames.
-	
-		Useful for things like 'press a button to continue' or menu item movement.
+		btnp is short for "Button Pressed"; Instead of being true when a button is held down, 
+		btnp returns true when a button is down AND it was not down the last frame. It also
+		repeats after 15 frames, returning true every 4 frames after that (at 30fps -- double
+		that at 60fp). This can be used for things like menu navigation or grid-wise player 
+		movement.
 
+		
 
 --------------------------------------------------------------------------------------------
 	Audio
@@ -1456,7 +1506,7 @@ Welcome to PICO-8!
 	dset index value
 
 		Set the number stored at index (0..63)
-		use this only after you have called cartdata()
+		Use this only after you have called cartdata()
 	
 		There is no need to flush written data -- it is automatically
 		saved to permanent storage even if POKE()'ed directly.
@@ -1506,54 +1556,6 @@ Welcome to PICO-8!
 	
 	var pico8_gpio = Array(128);
 
-
-
-============================================================================================
-	Advanced Topics
-============================================================================================
-
-
---------------------------------------------------------------------------------------------
-	SFX Instruments
---------------------------------------------------------------------------------------------
-
-	SFX Instruments can be used to 
-	
-
---------------------------------------------------------------------------------------------
-	Fill Patterns
---------------------------------------------------------------------------------------------
-
-		The PICO-8 fill pattern is a 4x2 or 4x4 repeating 2-colour pattern observed by:
-			circ() circfill() rect() rectfill() pset() line()
-		
-		To set a 4x2 pattern, add up the values in the cels you would like set:
-		
-		.-----------------------.
-		|  8  |  4  |  2  |  1  |
-		|-----|-----|-----|-----|
-		| 128 |  64 |  32 |  16 |
-		'-----------------------'
-		
-		Then poke it to address 0x5f31. For example, a checkered pattern could be:
-		
-		POKE(0x5f31, 1+4+32+128)
-		
-		Binary notation can also be used for readability (the bits are 128, 64, .. 1):
-		
-		POKE(0x5f31, 0b10100101)
-		
-		To specify 2 colours to draw with, use an 8-bit value with the drawing functions.
-		For example, to draw white (7) and red (8):
-		
-		rectfill(40,40,88,88, 7+8*16)
-		
-		Additional fill pattern modes can be set by POKE()ing bits to 0x5f33:
-		
-			0x1 Use a 4x4 fill pattern with the lower half set at address 0x5f32
-			0x2 Only draw the first colour (white, in this case) and skip the other colour (red).
-			
-			For example, POKE(0x5f33, 0x3) would set the mode to a 4x4 pattern with transparency.
 
 
 --------------------------------------------------------------------------------------------
@@ -1643,7 +1645,34 @@ Welcome to PICO-8!
 --------------------------------------------------------------------------------------------
 	VERSION HISTORY
 --------------------------------------------------------------------------------------------
-	
+
+	v0.1.11c
+		
+		Added: Local and UT time queries using stat()
+		Added: host_framerate_control (config.txt) to improve performance on slower machines and web 
+		Added: Control over cpu useage when running in background (-background_sleep_ms / config.txt)
+		Added: Windows icon in exported exe
+		Added: F11 to toggle fullscreen
+		Added: export -c switch to indicate transparent icon colour 
+		Added: show_backup_messages (config.txt) to turn off backup notifications
+		Added: SFX instruments documentation in pico8.txt
+		Added: Error message when trying to export carts with code size over the compressed limit
+		Changed: If config.txt is not found, the same directory as the executable is searched
+		Changed: If sdl_controllers.txt exists in the same directory as the executeable, it is processed first
+		Changed: Shorthand if () statements must be written on a single line
+		Fixed: reload() from bundled, non-primary cart in exported html multicart reads only original data
+		Fixed: Exported binaries wrongly observe F7 (capture label)
+		Fixed: Loading carts from earlier versions alters SFX data not intended for audio
+		Fixed: Old version of fill patterns documentation near end of pico8.txt
+		Fixed: 'backed up unsaved changes' message displayed during runtime for cstored() carts
+		Fixed: PICO-8 runs too slowly when in background (new default background_sleep_ms: 20)
+		Fixed: Saving screenshots and videos from exported binaries are named 0_*
+		Fixed: Compressed size limit warning on save doesn't mention exported carts
+		Fixed: btn(), btnp() don't work in infinite loops
+		Fixed: btnp() timing inconsistent between 30fps / 60fps / during frame-skipping / with no _update
+		Fixed: Can't move between channels while music is playing in song mode
+
+
 	v0.1.11b
 	
 		Fixed: Preprocessor bug regressions: "if (..) or", "a.b -= c - d"
@@ -1711,6 +1740,7 @@ Welcome to PICO-8!
 
 
 	v0.1.10c
+	
 		Fixed: atan flips sign for very negative values of x close to zero
 
 
