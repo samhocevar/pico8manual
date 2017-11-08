@@ -1,7 +1,7 @@
 ============================================================================================
 
- PICO-8 v0.1.11c
- http://www.pico-8.com
+ PICO-8 v0.1.11d
+ https://www.pico-8.com
  (c) Copyright 2014-2017 Lexaloffle Games LLP
  Author: Joseph White // hey@lexaloffle.com
  
@@ -40,7 +40,7 @@ Welcome to PICO-8!
 :: Specs
 
 	Display: 128x128, fixed 16 colour palette
-	Input: 6 button controllers
+	Input: 6-button controllers
 	Cartridge size: 32k
 	Sound: 4 channel, 64 definable chip blerps
 	Code: Lua (max 8192 tokens of code) 
@@ -172,7 +172,7 @@ Welcome to PICO-8!
 :: Backups
 
 	If you quit without saving changes, or overwrite an existing file, a backup of the 
-	cartridge is saved to pico-8/backup.
+	cartridge is saved to {appdata}/pico-8/backup.
 	
 
 :: Configuration
@@ -1646,6 +1646,14 @@ Welcome to PICO-8!
 	VERSION HISTORY
 --------------------------------------------------------------------------------------------
 
+	v0.1.11d
+
+		Fixed: time() always returns 0 when there is no _update function
+		Fixed: (raspi) Keyboard stops responding after pressing CTRL-F, CTRL-Z
+		Fixed: (raspi) Double keypresses in sound editor when entering notes
+		Fixed: stat(6) pads parameter string with spaces
+
+	
 	v0.1.11c
 		
 		Added: Local and UT time queries using stat()
