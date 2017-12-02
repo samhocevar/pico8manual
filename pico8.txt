@@ -1,6 +1,6 @@
 ============================================================================================
 
- PICO-8 v0.1.11d
+ PICO-8 v0.1.11e
  https://www.pico-8.com
  (c) Copyright 2014-2017 Lexaloffle Games LLP
  Author: Joseph White // hey@lexaloffle.com
@@ -167,7 +167,26 @@ Welcome to PICO-8!
 		out the current size of your code, use the INFO command. The compressed size limit is not enforced
 		for saving in .p8 format.
 		
+
+:: Using an External Text Editor
+
+	It is possible to edit .p8 files directly with a separate text editor. Using CTRL-R to run a
+	cartridge will automatically re-load the file if:
+	
+		1. There are no unsaved changes in the PICO-8 editors, and
+		2. The file differs in content from the last loaded version
 		
+	If there are changes to the cart on disk /and/ in the editor, a notification is displayed:
+	
+		DIDN'T RELOAD; UNSAVED CHANGES
+	
+	PICO-8 does not fully support upper-case characters, and they are automatically converted to
+	lower-case when viewed in the code editor. Note that this also causes unsaved changes to exist, 
+	which means that CTRL-R will stop automatically re-loading the version on disk until it is
+	manually LOAD()ed.
+	
+	Glyph characters (normally typed with shift-A..Z) are stored in .p8 format as $A..$Z.
+	
 
 :: Backups
 
@@ -319,7 +338,7 @@ Welcome to PICO-8!
 		For example, to use a 2x2 sprite starting at index 32 in the spritesheet, 
 		using colour 12 as transparent, and bundling an extra cartrige C0.P8:
 		
-			> EXPORT FOO.BIN -I 32 -S 2 -C 12
+			> EXPORT FOO.BIN -I 32 -S 2 -C 12 C0.P8
 
 	
 :: Exporting Multiple Cartridges
@@ -552,7 +571,7 @@ Welcome to PICO-8!
 		- + to navigate the current SFX
 	    < > to change the speed.
 		SPACE to play/stop
-		SHIFT-SPACE to play from the current group of 8
+		SHIFT-SPACE to play from the current SFX quarter (group of 8 notes)
 		A to release a looping sample
 		Left click or right click to increase / decrease the SPD or LOOP values
 		 // Hold shift when clicking to increase / decrease by 4
@@ -799,10 +818,10 @@ Welcome to PICO-8!
 	
 		Load or save a cartridge
 		
-		Returns true iff succeeded
+		Load returns true if succeeded, otherwise false
 		
 		When loading from a running cartridge, the loaded cartridge is immediately run with
-		parameter string param_str, and a menu item is inserted with the name breadcrumb, that
+		parameter string param_str, and a menu item is inserted and named breadcrumb, that
 		returns the user to the loading cartridge.
 		
 		Filenames that start with '#' are taken to be a BBS cart followed by its id:
@@ -842,8 +861,14 @@ Welcome to PICO-8!
 	info
 	
 		Print out some information about the cartridge:
-		code size, tokens, compressed size
-	
+		Code size, tokens, compressed size
+		
+		Also displayed:
+		
+			UNSAVED CHANGES   When the cartridge in memory differs to the one on disk
+			EXTERNAL CHANGES  When the cartridge on disk has changed since it was loaded
+				(e.g. by editing the program using a separate text editor)
+		
 	flip
 	
 		Flip the back buffer to screen and wait for next frame (30fps)
@@ -867,7 +892,7 @@ Welcome to PICO-8!
 
 		Get system status where x is:
 
-		0  Memory useage (0..1024)
+		0  Memory usage (0..2048)
 		1  CPU used since last flip (1.0 == 100% CPU at 30fps)
 		4  Clipboard contents (after user has pressed CTRL-V)
 		6  Parameter string
@@ -882,6 +907,8 @@ Welcome to PICO-8!
 		80..85  UTC time: year, month, day, hour, minute, second
 		90..95  Local time
 
+		100     Current breadcrumb label, or nil
+
 
 	extcmd x
 	
@@ -894,7 +921,10 @@ Welcome to PICO-8!
 		"video"      save a .gif to desktop
 		"audio_rec"  start recording audio
 		"audio_end"  save recorded audio to desktop
-
+		
+		"pause"      request the pause menu be opened
+		"reset"      request a cart reset
+		"breadcrumb" follow the current breadcrumb (if there is one)
 
 --------------------------------------------------------------------------------------------
 	Program Structure
@@ -1106,6 +1136,16 @@ Welcome to PICO-8!
 		
 			FILLP(0b0011010101101000.1) -- checkboard with transparent squares
 		
+		The fill pattern can also be set by setting bits in any colour parameter:
+
+			POKE(0x5F34, 1) -- sets integrated fillpattern + colour mode
+			CIRCFILL(64,64,20, 0x114E.ABCD) -- sets fill pattern to ABCD
+
+			-- bit  0x1000.0000 means the non-colour bits should be observed
+			-- bit  0x0100.0000 transparency bit
+			-- bits 0x00FF.0000 are the usual colour bits
+			-- bits 0x0000.FFFF are interpreted as the fill pattern
+	
 --------------------------------------------------------------------------------------------
 	Tables
 --------------------------------------------------------------------------------------------
@@ -1319,7 +1359,6 @@ Welcome to PICO-8!
 	
 		If a filename is specified, the data is written directly to that
 		cartridge on disk. Up to 64 cartridges can be written in one session.
-		Currently only the .p8 format is supported.
 		See the 'Cartridge Data' section for additional notes on using cstore.
 		
 		
@@ -1340,11 +1379,14 @@ Welcome to PICO-8!
 		Returns the maximum, minimum, or middle value of parameters
 		For example, mid(7,5,10) returns 7
 
-	flr x
+	flr  x
+	ceil x
 
-		Returns the closest integer below x // x-(x%1) 
-		flr(4.1)  --> 4
-		flr(-2.3) --> -3.0
+		Returns the closest integer below or above x // x-(x%1) 
+		?flr ( 4.1) -->  4
+		?flr (-2.3) --> -3
+		?ceil( 4.1) -->  5
+		?ceil(-2.3) --> -2
 
 
 	cos x
@@ -1383,17 +1425,18 @@ Welcome to PICO-8!
 		Sets the random number seed
 		The seed is automatically randomized on cart startup
 
-	Bitwise operations
+
+	Binary Operations
 
 		band x y
 		bor  x y
 		bxor x y
 		bnot x
+		shl  x n -- shift left n bits
+		shr  x n -- arithmetic right shift
+		lshr x n -- logical right shift
+		
 
-		shl  x y
-		shr  x y
-
-		// shifts are logicial shifts (the sign bit is not shifted)
 
 --------------------------------------------------------------------------------------------------------
 	Custom Menu Items
@@ -1447,50 +1490,63 @@ Welcome to PICO-8!
 
 		returns val as a string
 		
-		iff hex is true and val is a number, an unsigned hexidecimal writing of 
+		if hex is true and val is a number, an unsigned hexadecimal writing of 
 		the number is returned in the format "0x0000.0000". You can use this to
 		inspect the internal representation of PICO-8 numbers.
 		
-		iff val is a boolean, it is written as "true" or "false"
+		if val is a boolean, it is written as "true" or "false"
 		
 		all other val types are written as "[typename]"
 		
 	tonum val
 	
 		converts val to a number
-		iff val is a string, the number is taken to be decimal unless prefixed with "0x"
+		if val is a string, the number is taken to be decimal unless prefixed with "0x"
 		if the conversion fails, tonum returns nil.
 
 --------------------------------------------------------------------------------------------
 	Cartridge Data
 --------------------------------------------------------------------------------------------
 
-	Each cartidge is able to store 64 numbers (256 bytes) of persistent data 
-	on the user's PICO-8 (rather than on the cart itself). This can be used as
-	a lightweight way to store things like high scores or to save player progress.
+	Using cartdata(), dset(), and dget(), 64 numbers (256 bytes) of persistent data 
+	can be stored on the user's PICO-8 that persists after the cart is unloaded or
+	PICO-8 is shutdown. This can be used as a lightweight way to store things like 
+	high scores or to save player progress. It can also be used to share data across 
+	cartridges / cartridge versions.
 	
 	If you need more than 256 bytes, it is also possible to write directly to the
 	cartridge using cstore(). The disadvantage is that the data is tied to that
 	particular version of the cartridge. e.g. if a game is updated, players will
-	lose their savegames.
+	lose their savegames. Also, some space in the data sections of the cartridge
+	need to be left available.
 	
 	Another alternative is to write directly to a second cartridge by specifying
-	a fourth parameter to cstore(). This requires a cart swap though (so is 
-	slightly slower), and leaves data-cart litter when run from a local folder.
-	The file should be in .p8 format: cstore(0,0,0x2000,"spritesheet.p8")
+	a fourth parameter to cstore(). This requires a cart swap (which in reality
+	only means the user needs to watch a spinny cart animation for 1 second).
+	
+		CSTORE(0,0,0x2000, "spritesheet.p8")
+		-- later:
+		RELOAD(0,0,0x2000, "spritesheet.p8") -- restore the saved data
 	
 
 	cartdata id
-
-		Call this once on cartridge load. id is a string up to 64 characters long, and 
-		should be unusual enough that other cartridges do not accidentally use the
-		same id.
+	
+		cartdata() opens a permanent data storage slot indexed by id, that can be
+		used to store and retrieve up to 256 bytes (64 numbers) worth of data using 
+		DSET() and DGET().
+		
+			CARTDATA("zep_dark_forest") -- can only be set once per session
+			-- later in the program..
+			DSET(0, score)
+		
+		id is a string up to 64 characters long, and should be unusual enough that 
+		other cartridges do not accidentally use the same id.
 	
 		e.g. cartdata("zep_jelpi")
 	
 		legal characters are a..z, 0..9 and underscore (_)
 
-		returns true iff data was loaded.
+		returns true if data was loaded, otherwise false
 
 		cartdata can not be called more than once per cartridge execution.
 	
@@ -1557,6 +1613,29 @@ Welcome to PICO-8!
 	var pico8_gpio = Array(128);
 
 
+--------------------------------------------------------------------------------------------
+	Mouse and Keyboard Input
+--------------------------------------------------------------------------------------------
+
+	Mouse and keyboard input can be achieved by enabling devkit input mode:
+	
+	POKE(0x5F2D, 1)
+	
+	Note that not every PICO-8 will have a keyboard or mouse attached to it, so when posting
+	carts to the Lexaloffle BBS, it is encouraged to make keyboard and/or mouse control 
+	optional and off by default, if possible. When devkit input mode is enabled, a message is
+	displayed to BBS users warning them that the program is expecting input beyond the 
+	standard 6-button controllers.
+	
+	The state of the mouse and keyboard can be found in stat(x):
+	
+	STAT(30) -- (Boolean) True when a key
+	STAT(31) -- (String) character returned by keyboard
+	STAT(32) -- Mouse X
+	STAT(33) -- Mouse Y
+	STAT(34) -- Mouse buttons (bitfield)
+	STAT(36) -- Mouse wheel event
+
 
 --------------------------------------------------------------------------------------------
 	Additional Lua Features
@@ -1619,7 +1698,7 @@ Welcome to PICO-8!
 			Run or continue the coroutine c. Parameters p0, p1.. are passed to the
 			coroutine's function.
 			
-			Returns true iff the coroutine completes without any errors
+			Returns true if the coroutine completes without any errors
 			Returns false, error_message if there is an error.
 			
 			** Runtime errors that occur inside coroutines do not cause the program
@@ -1646,8 +1725,38 @@ Welcome to PICO-8!
 	VERSION HISTORY
 --------------------------------------------------------------------------------------------
 
+	v0.1.11e
+
+		Added: stat(30..31) for devkit keyboard input
+		Added: extcmd("pause") extcmd("reset") extcmd("breadcrumb")
+		Added: lshr(), ceil()
+		Added: stat(12..15) to grab the position of the pause menu (x0,y0,y1,y1)
+		Added: DPAD game controller buttons mapped to LRUD
+		Added: CTRL-click on song navigator to scroll by 4 patterns
+		Added: Can type and paste glyphs in commandline
+		Added: Notification when CTRL-R fails to reload because of unsaved changes
+		Added: Notification when code automatically converted to lower-case
+		Added: INFO() checks for "external changes" (e.g. when using a separate text editor)
+		Added: .p8.png format can be used with cstore() and carts bundled in multicarts
+		Added: Can optionally set fill pattern using colour parameter 
+		Changed: Glyphs can be used as variable names
+		Changed: Glyphs stored in clipboard and .p8 format as roughly corresponding unicode
+		Changed: .p8 format skips storing tailing rows of data that match default state
+		Changed/Fixed: shr(x,n) is now equivalent to calling shr(x,1) n times when n >= 32
+		Fixed: Error message and stack trace line numbers 0 or slightly out
+		Fixed: Unclosed block error navigates cursor to <eof> rather than start of block
+		Fixed: Exported binaries can load carts outside of bundle
+		Fixed: BBS cart loaded from a local cart loses data cstore()ed during previous run
+		Fixed: btn() returns same as btnp()
+		Fixed: btnp(6) always returns false
+		Fixed: Missing mask pixels in cart download animation frame
+		Fixed: Crash when try to load a directory as a cart
+		Fixed: Sometimes cursor position set by keyboard mouse emulation in code editor
+		
+		
 	v0.1.11d
 
+		Added: t() aliased to time()
 		Fixed: time() always returns 0 when there is no _update function
 		Fixed: (raspi) Keyboard stops responding after pressing CTRL-F, CTRL-Z
 		Fixed: (raspi) Double keypresses in sound editor when entering notes
@@ -1658,7 +1767,7 @@ Welcome to PICO-8!
 		
 		Added: Local and UT time queries using stat()
 		Added: host_framerate_control (config.txt) to improve performance on slower machines and web 
-		Added: Control over cpu useage when running in background (-background_sleep_ms / config.txt)
+		Added: Control over cpu usage when running in background (-background_sleep_ms / config.txt)
 		Added: Windows icon in exported exe
 		Added: F11 to toggle fullscreen
 		Added: export -c switch to indicate transparent icon colour 
@@ -1767,7 +1876,7 @@ Welcome to PICO-8!
 		Added: Demo carts: bounce, sort
 		Added: .p8 format can now store cart labels
 		Added: Splore navigation keys: pageup/down, home, end
-		Added: Splore useage hint shown on empty favourites list
+		Added: Splore usage hint shown on empty favourites list
 		Added: Warning on boot when data folder is read-only or can't be created
 		Added: Pressing tab with code selected indents those lines (shift-tab to un-indent)
 		Added: Double click word to select it
@@ -1823,7 +1932,7 @@ Welcome to PICO-8!
 		Changed: Unfiltered screen stretching at integer scales by default
 		Changed: Removed -aspect and -scale settings (use draw_rect instead)
 		Fixed: -home has no effect under Windows
-		Fixed: Sometimes frame skipping starts before CPU useage has reached 100%
+		Fixed: Sometimes frame skipping starts before CPU usage has reached 100%
 		Fixed: Double-speed BTNP() timing in 60fps mode
 		Fixed: Exported HTML fails when _update60 is used instead of _update
 		Fixed: Can't copy and paste button glyphs
@@ -1859,7 +1968,7 @@ Welcome to PICO-8!
 		Changed: Only .p8 files listed by dir() and by splore
 		Changed: Command history increased to 256
 		Changed: exit() / shutdown() have no effect while running cart
-		Fixed: Memory useage (stat(0)) inconsistent across host platforms
+		Fixed: Memory usage (stat(0)) inconsistent across host platforms
 		Fixed: Spinny disks shows when reloading current cart with load()
 		Fixed: GIF saver does not respect 64x64 / mirrored modes
 		Fixed: Miscellaneous multi-line comments / strings issues
