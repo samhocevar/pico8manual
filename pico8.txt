@@ -1,6 +1,6 @@
 ============================================================================================
 
- PICO-8 v0.1.11e
+ PICO-8 v0.1.11f
  https://www.pico-8.com
  (c) Copyright 2014-2017 Lexaloffle Games LLP
  Author: Joseph White // hey@lexaloffle.com
@@ -1274,6 +1274,11 @@ Welcome to PICO-8!
 	Map
 --------------------------------------------------------------------------------------------------------
 
+	The PICO-8 map is a 128x32 grid of 8-bit cels, or 128x64 when using the shared memory. When 
+	using the map editor, the meaning of each cel is taken to be an index into the spritesheet 
+	(0..255). However, it can instead be used as a general block of data.
+	
+	
 	mget x y
 	mset x y v
 
@@ -1290,21 +1295,26 @@ Welcome to PICO-8!
 	
 		e.g. map(0,0, 20,20, 4,2)
 		-> draws a 4x2 blocks of cels starting from 0,0 in the map, to the screen at 20,20
-	
+		
+		If cel_w and cel_h are not specified, defaults to 128,32 
+		(the top half of the map -- use 128,64 for the full map including shared memory)
+
+
 --------------------------------------------------------------------------------------------------------
 	Memory
 --------------------------------------------------------------------------------------------------------
 
 	PICO-8 has 3 types of memory:
 
-		1. Base ram (32k): see layout below. Access with peek() poke() memcpy() memset()
-		2. Cart rom (32k): same layout as base ram until 0x4300. Copy from cart to base ram with reload()
-		3. Lua ram (2MB): compiled program + variables. Pay no attention to the man behind the curtain.
+		1. Base RAM (32k): see layout below. Access with peek() poke() memcpy() memset()
+		2. Cart ROM (32k): same layout as base ram until 0x4300
+		3. Lua RAM (2MB): compiled program + variables
 
 		Technical note: // you probably don't need to know this
-		While using the editor, the data being modified is in cart rom, but api functions such as spr() 
-		and sfx() only operate on base ram. PICO-8 automatically copies cart rom to base ram (i.e.
-		calls reload()) in 3 cases:
+		
+			While using the editor, the data being modified is in cart rom, but api functions such as spr() 
+			and sfx() only operate on base ram. PICO-8 automatically copies cart rom to base ram (i.e.
+			calls reload()) in 3 cases:
 
 			1. When a cartridge is loaded
 			2. When a cartridge is run
@@ -1337,6 +1347,12 @@ Welcome to PICO-8!
 		Read and write one byte to an address in base ram.
 		Legal addresses are 0x0..0x7fff
 		Reading or writing outside causes a fault
+		
+	peek4 addr
+	poke4 addr val
+	
+		32-bit versions. Read and write one number (val) in little-endian format.
+		addr does not need to be aligned to 4-byte boundaries.
 
 	memcpy dest_addr source_addr len
 
@@ -1347,7 +1363,8 @@ Welcome to PICO-8!
 
 		Same as memcpy, but copies from cart rom
 		The code section ( >= 0x4300) is protected and can not be read.
-		If filename (.p8) specified, load data from a different cartridge.
+		If filename specified, load data from a different cartridge.
+			// (must be local -- bbs cartridges can not be read in this way)
 
 	cstore dest_addr source_addr len [filename]
 
@@ -1356,7 +1373,7 @@ Welcome to PICO-8!
 		Can use for writing tools to construct carts or to visualize the state 
 		of the map / spritesheet using the map editor / gfx editor.
 		The code section ( >= 0x4300) is protected and can not be written to.
-	
+		
 		If a filename is specified, the data is written directly to that
 		cartridge on disk. Up to 64 cartridges can be written in one session.
 		See the 'Cartridge Data' section for additional notes on using cstore.
@@ -1382,10 +1399,11 @@ Welcome to PICO-8!
 	flr  x
 	ceil x
 
-		Returns the closest integer below or above x // x-(x%1) 
+		Returns the closest integer that is equal to or below / above x 
+		
 		?flr ( 4.1) -->  4
-		?flr (-2.3) --> -3
 		?ceil( 4.1) -->  5
+		?flr (-2.3) --> -3
 		?ceil(-2.3) --> -2
 
 
@@ -1432,10 +1450,11 @@ Welcome to PICO-8!
 		bor  x y
 		bxor x y
 		bnot x
+		rotl x y
+		rotr x y
 		shl  x n -- shift left n bits
 		shr  x n -- arithmetic right shift
 		lshr x n -- logical right shift
-		
 
 
 --------------------------------------------------------------------------------------------------------
@@ -1502,7 +1521,7 @@ Welcome to PICO-8!
 	
 		converts val to a number
 		if val is a string, the number is taken to be decimal unless prefixed with "0x"
-		if the conversion fails, tonum returns nil.
+		if the conversion fails, tonum returns no value.
 
 --------------------------------------------------------------------------------------------
 	Cartridge Data
@@ -1725,11 +1744,17 @@ Welcome to PICO-8!
 	VERSION HISTORY
 --------------------------------------------------------------------------------------------
 
+	v0.1.11f
+
+		Fixed: Pause menu doesn't open inside an infinite loop
+		Fixed: Binary and hex string digits outside of 0xffff.ffff alter result
+
+
 	v0.1.11e
 
 		Added: stat(30..31) for devkit keyboard input
 		Added: extcmd("pause") extcmd("reset") extcmd("breadcrumb")
-		Added: lshr(), ceil()
+		Added: lshr(), ceil(), rotl(), rotr(), peek4(), poke4()
 		Added: stat(12..15) to grab the position of the pause menu (x0,y0,y1,y1)
 		Added: DPAD game controller buttons mapped to LRUD
 		Added: CTRL-click on song navigator to scroll by 4 patterns
