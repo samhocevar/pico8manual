@@ -1,6 +1,6 @@
 ============================================================================================
 
-	PICO-8 v0.1.12
+	PICO-8 v0.1.12b
 	https://www.pico-8.com
 	(c) Copyright 2014-2019 Lexaloffle Games LLP
 	Author: Joseph White // hey@lexaloffle.com
@@ -214,6 +214,8 @@ Welcome to PICO-8!
 
 		Use the -home switch (below) to use a different path to store config.txt and other data.
 		
+		Some settings can be changed while running PICO-8 by typing CONFIG SETTING VALUE.
+		
 
 	:: Commandline parameters
 	
@@ -365,13 +367,12 @@ Welcome to PICO-8!
 		If you would like to upload your exported cartridge to itch.io as playable html:
 
 			1. From inside PICO-8: EXPORT -F FOO.HTML
-			2. zip up the 3 files as something .
-			3. Create a new project from your itch dashboard.
-			4. Upload the zip and set it to "This file will be played in the browser"
-			5. Embed in page, with a size of 750px x 640px.
-			6. Set "Mobile Friendly" on (default orientation) and "Automatically start on page load" on.
+			2. Create a new project from your itch dashboard.
+			3. Zip up the folder and upload it (set "This file will be played in the browser")
+			4. Embed in page, with a size of 750px x 640px.
+			5. Set "Mobile Friendly" on (default orientation) and "Automatically start on page load" on.
 				// no need for the fullscreen button as the default PICO-8 template has its own.
-			7. Set the background (BG2) to something dark (e.g. #232323) and the text to something light.
+			6. Set the background (BG2) to something dark (e.g. #232323) and the text to something light.
 
 		
 	:: Exporting Multiple Cartridges
@@ -395,6 +396,12 @@ Welcome to PICO-8!
 		parameters to the EXPORT command are passed along as a single (lowercase) string:
 
 			pico8 foo.p8 -export "-i 32 -s 2 -c 12 foo.bin dat0.p8 dat1.p8"
+
+
+	:: Limitations of Exported Cartridges
+
+		Exported cartridges can currently not load and run BBS cartridges e.g. via LOAD("#FOO")
+		
 
 
 :: Splore
@@ -1040,13 +1047,17 @@ Welcome to PICO-8!
 		#INCLUDE ALLTABS.P8
 
 	When the cartridge is run, the contents of each included file is treated as if it had
-	been pasted into the editor in place of that line. Normal character count and token
-	limits apply.
+	been pasted into the editor in place of that line.
+
+		- Filenames are relative to the current cartridge (so, need to save first)
+		- Includes are not performed recursively. 
+		- Normal character count and token limits apply.
 
 	When a cartridge is saved as .P8.PNG, or exported to a binary, any included files are 
 	flattened and saved with the cartridge so that there are no external dependencies.
 	
 	#INCLUDE can be used for things like:
+
 		- Sharing code between cartridge (libraries or common multi-cart code)
 		- Using an external code editor without needing to edit the .p8 file directly.
 		- Treating a cartridge as a data file that loads a PICO-8 editing tool to modify it.
@@ -1908,6 +1919,23 @@ Welcome to PICO-8!
 	VERSION HISTORY
 --------------------------------------------------------------------------------------------
 
+	v0.1.12b
+
+		Added: config command (e.g. CONFIG THEME CLASSIC)
+		Fixed: Windows sound resampling artifacts (moved to SDL2 2.0.9 audio:directsound)
+		Fixed: Glyphs stored as unicode can not load when #include'd		
+		Fixed: Code highlighting is wrong after select and delete a line
+		Fixed: Last line endpoint not present in draw state memory
+		Fixed: Ubuntu 16.04 can not run because requires glibc 2.27 (reduced dependency to 2.14)
+		Fixed: stat(102) returns nil when run from binary instead of 0 (now 0)
+		Fixed: Loading cartridge from commandline fails when path contains "../"
+		Fixed: (OSX) Crash when reloading external changes with CTRL-R
+		Fixed: (Windows) Crash when running cart with included code		
+		Fixed: Can not export or include extra cartridges outside of current directory
+		Fixed: Off by 1 when search for line 1 (affected ctrl-b, ctrl-l)
+		Fixed: html template -- mouse cursor showing over canvas (now hidden by default)
+
+
 	v0.1.12
 
 		Added: #include a text file, or a tab from another cartridge
@@ -1939,6 +1967,7 @@ Welcome to PICO-8!
 		Added: -pixel_perfect -1 (auto) only uses pixel perfect scaling when < 10% of the containing screen axis is wasted
 		Added: highlight all occurances when searching for text in code editor 
 		Added: tab completion across directories
+		Added: In map editor, non-zero cels that are drawn all black are marked with a single blue dot
 		Changed: all(), foreach() cpu cost is now much cheaper (but still a little more than using a for loop)
 		Changed: cursor() can also set the current color with a third parameter
 		Changed: stat 24..26 return -1 when no music is playing
@@ -1992,9 +2021,6 @@ Welcome to PICO-8!
 		Fixed: "Removed empty tabs" message displayed when loading cart with fewer tabs
 		Fixed: Member variables highlighted when same as API function names (e.g. actor.spr)
 		Fixed: Hot-plugged joysticks not recognized
-		Fixed: Loading cartridge from commandline fails when path contains "../"
-		Fixed: (OSX) Crash when reloading external changes with CTRL-R
-		Fixed: Can not export or include extra cartridges outside of current directory
 
 
 	v0.1.11g
