@@ -1,6 +1,6 @@
 ============================================================================================
 
-	PICO-8 v0.1.12b
+	PICO-8 v0.1.12c
 	https://www.pico-8.com
 	(c) Copyright 2014-2019 Lexaloffle Games LLP
 	Author: Joseph White // hey@lexaloffle.com
@@ -1918,6 +1918,16 @@ Welcome to PICO-8!
 --------------------------------------------------------------------------------------------
 	VERSION HISTORY
 --------------------------------------------------------------------------------------------
+
+	v0.1.12c
+
+		Fixed: CPU usage reported by stat(1) is higher than actual value
+		Fixed: Fail to load .p8 cartridges w/ BOM marker / CRLF endlines
+		Fixed: Syntax errors / crash caused by #including files containing BOM / CRLFs
+		Fixed: Can not save .p8 when contains unresolved #includes
+		Fixed: Can't open pico-8.txt in Notepad.exe (added CRLFs)
+		Fixed: Can delete null terminator at end of code (revealing previously deleted code)
+
 
 	v0.1.12b
 
