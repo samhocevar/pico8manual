@@ -1,8 +1,8 @@
 ============================================================================================
 
-	PICO-8 v0.1.12c
+	PICO-8 v0.2.0
 	https://www.pico-8.com
-	(c) Copyright 2014-2019 Lexaloffle Games LLP
+	(c) Copyright 2014-2020 Lexaloffle Games LLP
 	Author: Joseph White // hey@lexaloffle.com
 
 	PICO-8 is built with:
@@ -63,8 +63,8 @@ Welcome to PICO-8!
 	
 	You can build up an interactive program by using commands like this in the code editing
 	mode along with two special callback functions _UPDATE and _DRAW. For example, the following
-	program allows you to move a circle around with the cursor keys. Press escape to switch
-	to the code editor and type or copy & paste the following code:
+	program allows you to move a circle around with the cursor keys. Press Esc to switch to
+	the code editor and type or copy & paste the following code:
 
 	X = 64  Y = 64
 	FUNCTION _UPDATE()
@@ -75,18 +75,18 @@ Welcome to PICO-8!
 	END
 
 	FUNCTION _DRAW()
-	 RECTFILL(0,0,127,127,5)
+	 CLS(5)
 	 CIRCFILL(X,Y,7,14)
 	END
 
-	Now press escape to return to the console and type RUN (or press CTRL-R) to see it 
-	in action. See the example cartridges for more complex programs.
+	Now press Esc to return to the console and type RUN (or press CTRL-R) to see it in action.
+	Pleae refer to the demo cartridges for more complex programs (type INSTALL_DEMOS).
 	
 	If you want to store your program for later, use the SAVE command:
 	
 	> SAVE PINKCIRC
 	
-	And load it again:
+	And to load it again:
 	
 	> LOAD PINKCIRC
 	
@@ -97,16 +97,15 @@ Welcome to PICO-8!
 	
 	INSTALL_DEMOS
 	CD DEMOS
+	LS
 	
 	HELLO      Greetings from PICO-8
 	API        Demonstrates most PICO-8 functions
 	JELPI      Platform game demo w/ 2p support 
 	CAST       2.5D Raycaster demo
-	MANDEL     Mandelbrot explorer
-	COLLIDE    Example wall and actor collisions
-	BUTTERFLY  Serpinsky triangles thing
 	DRIPPY     Draw a drippy squiggle
-	STOMPY     Music cart
+	WANDER     Simple walking simulator
+	COLLIDE    Example wall and actor collisions
 
 	To run a cartridge, open PICO-8 and type:
 
@@ -120,7 +119,7 @@ Welcome to PICO-8!
 
 	These commands can be used to manage files and directories (folders):
 	
-	DIR         list the current directory
+	LS          list the current directory
 	CD BLAH     change directory
 	CD ..       go up a directory
 	CD /        change back to top directory (on PICO-8's virtual drive)
@@ -142,8 +141,8 @@ Welcome to PICO-8!
 	You can change this and other settings in pico-8/config.txt
 	
 	Tip: The drive directory can be mapped to a cloud drive (provided by Dropbox, Google
-	Drive or similar) in order to provide a single disk shared between PICO-8 machines 
-	spread across different host machines.
+	Drive or similar) in order to create a single disk shared between PICO-8 machines spread 
+	across different host machines.
 
 
 :: Loading and Saving
@@ -159,7 +158,7 @@ Welcome to PICO-8!
 
 	:: Saving .p8.png carts with a text label and preview image
 	
-		To generate a label image saved with the cart, run the program first and press F7 to grab
+		To generate a label image saved with the cart, run the program first and press CTRL-7 to grab
 		whatever is on the screen. The first two lines of the program starting with '--' are also 
 		drawn to the cart's label.
 
@@ -183,7 +182,7 @@ Welcome to PICO-8!
 		1. There are no unsaved changes in the PICO-8 editors, AND
 		2. The file differs in content from the last loaded version
 		
-	If there are changes to the cart on disk /and/ in the editor, a notification is displayed:
+	If there are changes to both the cart on disk and in the editor, a notification is displayed:
 	
 		DIDN'T RELOAD; UNSAVED CHANGES
 	
@@ -192,15 +191,16 @@ Welcome to PICO-8!
 	which means that CTRL-R will stop automatically re-loading the version on disk until it is
 	manually LOAD()ed.
 	
-	Glyph characters (normally typed with shift-A..Z) are stored in .p8 format and in the
-	host operating system's clipboard as rough unicode equivalents. 
+	Glyph characters (typed with shift-A..Z) are stored in .p8 format and in the host operating 
+	system's clipboard as rough unicode equivalents. 
 	
 
 :: Backups
 
-	If you quit without saving changes, or overwrite an existing file, a backup of the 
-	cartridge is saved to {appdata}/pico-8/backup.
-	
+	If you quit without saving changes, or overwrite an existing file, a backup of the cartridge 
+	is saved to {appdata}/pico-8/backup. An extra copy of the current cartridge can also be saved
+	to the same folder by typing BACKUP.
+
 
 :: Configuration
 
@@ -215,7 +215,8 @@ Welcome to PICO-8!
 		Use the -home switch (below) to use a different path to store config.txt and other data.
 		
 		Some settings can be changed while running PICO-8 by typing CONFIG SETTING VALUE.
-		
+		(type CONFIG by itself for a list)
+
 
 	:: Commandline parameters
 	
@@ -270,15 +271,13 @@ Welcome to PICO-8!
 
 	While a cartridge is running use:
 
-		F6 Save a screenshot to desktop
-		F7 Capture cartridge label image
-		F8 Start recording a video
-		F9 Save GIF video to desktop (max: 8 seconds by default)
-		
-		// if F6..F9 are not available on your system, use CTRL-6..9
+		CTRL-6 Save a screenshot to desktop
+		CTRL-7 Capture cartridge label image
+		CTRL-8 Start recording a video
+		CTRL-9 Save GIF video to desktop (max: 8 seconds by default)
 	
-	You can save a video at any time (it is always recording) -- use F8 just to reset
-	the video starting point if you want something less than 8 seconds long.
+	You can save a video at any time (it is always recording) -- use CTRL-8 just to reset
+	the video starting point if you want something less or more than 8 seconds long.
 
 	To change the maximum gif length, edit gif_len in config.txt to specify the number
 	of seconds to record for. The gif format can not match 30fps exactly, so PICO-8 
@@ -301,7 +300,7 @@ Welcome to PICO-8!
 		3. Export the cartridge to a stand-alone html/js or native binary player
 			(see the exporters section for details)
 		
-		
+
 :: Exporters / Importers
 
 	The EXPORT command can be used to generate png, wav files and stand-alone html and native
@@ -360,7 +359,7 @@ Welcome to PICO-8!
 		For example, to use a 2x2 sprite starting at index 32 in the spritesheet, 
 		using colour 12 as transparent:
 		
-			> EXPORT -I 32 -S 2 -C 12 FOO.BIN 
+			> EXPORT -I 32 -S 2 -C 12 FOO.BIN
 
 	:: Uploading to itch.io
 	
@@ -369,12 +368,12 @@ Welcome to PICO-8!
 			1. From inside PICO-8: EXPORT -F FOO.HTML
 			2. Create a new project from your itch dashboard.
 			3. Zip up the folder and upload it (set "This file will be played in the browser")
-			4. Embed in page, with a size of 750px x 640px.
+			4. Embed in page, with a size of 750px x 680px.
 			5. Set "Mobile Friendly" on (default orientation) and "Automatically start on page load" on.
 				// no need for the fullscreen button as the default PICO-8 template has its own.
-			6. Set the background (BG2) to something dark (e.g. #232323) and the text to something light.
+			6. Set the background (BG2) to something dark (e.g. #232323) and the text to something light (#cccccc)
 
-		
+
 	:: Exporting Multiple Cartridges
 
 		Up to 16 cartridges can be bundled together by passing them to EXPORT, when generating
@@ -400,8 +399,8 @@ Welcome to PICO-8!
 
 	:: Limitations of Exported Cartridges
 
-		Exported cartridges can currently not load and run BBS cartridges e.g. via LOAD("#FOO")
-		
+		Exported cartridges are unable to load and run BBS cartridges e.g. via LOAD("#FOO")
+
 
 
 :: Splore
@@ -423,9 +422,8 @@ Welcome to PICO-8!
 	still possible to play any cartridges you have downloaded.
 	
 	If you have installed PICO-8 on a machine with no internet access, you can also
-	use INSTALL_GAMES to add a small selection of pre-installed BBS carts to your
-	favourites list.
-	
+	use INSTALL_GAMES to add a small selection of pre-installed BBS carts to /games
+
 
 
 :: Quirks of PICO-8
@@ -434,11 +432,11 @@ Welcome to PICO-8!
 	
 	- The bottom half of the spritesheet and bottom half of the map occupy the same memory.
 		// Best use only one or the other if you're unsure how this works.
-	- PICO-8 numbers only go up to 32767.99.
+	- PICO-8 numbers only go up to 32767.99999 (0x7fff.ffff)
 		// If you add 1 to a counter each frame, it will overflow after around 18 minutes!
-	- Lua arrays are 1-based by default, not 0-based. FOREACH starts at T[1], not T[0].
-	- cos() and sin() take 0..1 instead of 0..PI*2, and sin() is inverted.
-	- sgn(0) returns 1.
+	- Lua arrays are 1-based by default, not 0-based. FOREACH starts at TBL[1], not TBL[0].
+	- COS() and SIN() take 0..1 instead of 0..PI*2, and SIN() is inverted.
+	- SGN(0) returns 1.
 	- Toggle fullscreen: use alt-enter on OSX (command-F is used for searching text).
 	- When you want to export a .png cartridge, use SAVE, not EXPORT. EXPORT will save only the spritesheet!
 
@@ -474,8 +472,8 @@ Welcome to PICO-8!
 	TAB to indent a selection (shift to un-indent)
 	CTRL-B to comment / uncomment selected block
 
-	To enter special characters that represent buttons, use SHIFT-L,R,U,D,O,X
-	Or press CTRL-K to toggle glyph mode
+	To enter special characters that represent buttons (and other glyphs), use SHIFT-L,R,U,D,O,X
+	To enter katakana or hiragana, use SHIFT-K, and then SHIFT-P to toggle between the two.
 	
 	:: Tabs
 	
@@ -518,7 +516,8 @@ Welcome to PICO-8!
 		Enter or click to select none.
 		
 		If a pixel-wise selection is not present, many operations are instead applied
-		to a sprite-wise selection. To select sprites, shift-drag in the sprite navigator.
+		to a sprite-wise selection, or the visible view. To select sprites, shift-drag in the sprite navigator.
+		To select the spritesheet press ctrl-A (repeat to toggle off the bottom half shared with map data)
 	
 	Pan Tool // shortcut: space
 		View the spritesheet.
@@ -527,9 +526,14 @@ Welcome to PICO-8!
 		Fill with the current colour
 		Applies to the current selection
 		If no selection, applies to visible area
+	
+	Shape Tools
+		Click the tool button to cycle through: circle, rectangle, line
+		Hold ctrl to get a filled circle or rectangle
+
 
 	Extra keys
-		CTRL-Z to undo // single step only in 0.2.0
+		CTRL-Z to undo
 		CTRL-C to copy selected area or selected sprites
 		CTRL-V to paste to current sprite location
 		Q,W to switch to previous/next sprite
@@ -553,7 +557,7 @@ Welcome to PICO-8!
 
 :: Map Editor
 
-	The pico-8 map is a 128x32 (or 128x64 using shared space) block of 8-bit values.
+	The PICO-8 map is a 128x32 (or 128x64 using shared space) block of 8-bit values.
 	Each value is shown in the editor as a reference to a sprite (0..255), but you can
 	of course use the data to represent whatever you like.
 
@@ -565,7 +569,15 @@ Welcome to PICO-8!
 	To pan around the map, use the pan tool or hold space
 	Q,W to switch to previous/next sprite
 	Mousewheel or < and > to zoom (centered in fullscreen)
-	
+
+	To move sprites in the spritesheet without breaking references to them in the map:
+
+		1. Back up your cartridge!
+		2. Optionally select the area of the map you would like to alter (defaults to top half)
+			// press ctrl-A twice for whole map including shared memory.
+		3. Select the sprites you would like to move (while still in map view), and press Ctrl-X
+		4. Select the destination sprite (also while still in map view) and press Ctrl-V
+
 
 :: SFX Editor
 
@@ -719,7 +731,7 @@ Welcome to PICO-8!
 	
 	:: Types and assignment
 
-		Types in Lua are numbers, strings, booleans and tables;
+		Types in Lua are numbers, strings, booleans and tables:
 
 		NUM = 12/100
 		S = "THIS IS A STRING"
@@ -830,11 +842,11 @@ Welcome to PICO-8!
 		1. IF THEN END statements can be written on a single line with:
 
 		IF (NOT B) I=1 J=2
-		-- is equivalent to: IF (NOT B) THEN I=1 J=2 END
-		-- note the brackets around the condition
+		-- is equivalent to: IF NOT B THEN I=1 J=2 END
+		-- note that brackets around the short-hand condition are required.
 		
 	
-		2. unary math operators
+		2. Unary math operators
 
 		Unary math operators can also be used if the whole statement is on one line.	
 
@@ -843,7 +855,7 @@ Welcome to PICO-8!
 		a *= 2  -- equivalent to: a = a * 2
 		a /= 2  -- equivalent to: a = a / 2
 		a %= 2  -- equivalent to: a = a % 2
-	
+		
 	
 		3. != operator
 	
@@ -881,9 +893,10 @@ Welcome to PICO-8!
 		
 		Filenames that start with '#' are taken to be a BBS cart followed by its id:
 		load("#1234") -- download [and run] cart number 1234
-		
-		If the id is of the cart's parent post, then the latest version is downloaded.
-		BBS carts can be loaded from other BBS carts or local carts, but not from exported carts. 
+				
+		If the id is the cart's parent post, or a revision number is not specified, then the latest
+		version is fetched. BBS carts can be loaded from other BBS carts or local carts, but not from 
+		exported carts. 
 		
 
 	folder
@@ -891,7 +904,7 @@ Welcome to PICO-8!
 		Open the carts folder in the host operating system.
 
 
-	dir (also aliased as ls)
+	ls (also aliased as dir)
 
 		List files in the current directory. When called from a running program, returns a list 
 		of all .p8 and .p8.png files in the same directory.
@@ -910,7 +923,8 @@ Welcome to PICO-8!
 
 	resume
 	
-		Run from the existing cart state (flakey)
+		Continue from the existing program state, by re-entering the mainloop (requires _update / _draw)
+		Use a single "." from the commandline to advance a single frame.
 
 
 	reboot
@@ -1072,12 +1086,13 @@ Welcome to PICO-8!
 	bottom half of the map data ("shared data"). These 256 sprites are collectively called
 	the sprite sheet, and can be thought of as a 128x128 pixel image.
 
-	All of PICO-8's drawing operations are subject to the current draw-state. The draw-state
+	All of PICO-8's drawing operations are subject to the current draw state. The draw state
 	includes a camera position (for adding an offset to all coordinates), palette mapping 
 	(for recolouring sprites), clipping rectangle, a drawing colour, and a fill pattern.
 	
 	The draw state is reset each time a program is run. This is equivalent to calling:
-	clip() camera() pal() color(6)
+	clip() camera() pal() color()
+
 
 	Colours indexes:
 	
@@ -1137,10 +1152,10 @@ Welcome to PICO-8!
 		If col is specified, also set the current colour.
 
 
-	color col
+	color [col]
 
 		Set the current colour to be used by drawing functions
-	
+		If col is not specified, the current colour is set to 6
 	
 	cls [col]
 
@@ -1183,15 +1198,19 @@ Welcome to PICO-8!
 			1 screen palette : colours are remapped on display // e.g. for fades
 		c0 colour index 0..15
 		c1 colour index to map to
-	
 
-	palt c t
+		When c0 is 16 and c1 is a table, a colour to the value of each key 0..15
+		For example, to re-map colour 12 and 14 to red: pal(16,{[12]=8,[14]=8})
+
+	palt c [t]
 
 		Set transparency for colour index to t (boolean)
-		Transparency is observed by spr(), sspr() and map()
+		Transparency is observed by spr(), sspr(), map() and tline()
 		e.g. palt(8, true) -- red pixels not drawn
 		palt() resets to default: all colours opaque except colour 0
-	
+
+		When c is the only parameter, it is treated as a bitfield used to set all 16 values.
+		For example: to set colours 0 and 1 as transparent: palt(0b1100000000000000)
 
 
 	spr n x y [w h] [flip_x] [flip_y]
@@ -1254,7 +1273,23 @@ Welcome to PICO-8!
 			-- bit  0x0100.0000 transparency bit
 			-- bits 0x00FF.0000 are the usual colour bits
 			-- bits 0x0000.FFFF are interpreted as the fill pattern
+
 	
+
+	tline x0 y0 x1 y1 mx my [mdx mdy]
+
+		Draw a textured line from (x0,y0) to (x1,y1), reading colour values from the map.
+		mx, my are map coordinates in tiles.
+		mdx, mdy is a delta added to mx,my after each pixel is drawn. (Defaults to 1/8, 0)
+		
+
+		The map coordinates (mx, my) are masked by values at the following addresses
+		// They must be values power of 2 (8,16,32..)
+		
+		POKE(0x5F38, WIDTH)
+		POKE(0x5F39, HEIGHT)
+
+
 --------------------------------------------------------------------------------------------
 	Tables
 --------------------------------------------------------------------------------------------
@@ -1356,7 +1391,13 @@ Welcome to PICO-8!
 		that at 60fp). This can be used for things like menu navigation or grid-wise player 
 		movement.
 
-		
+		Custom delays (in frames @ 30fps) can be set by poking the following memory addresses:
+
+		POKE(0x5F5C, DELAY) -- set the initial delay before repeating. 255 means never repeat.
+		POKE(0x5F5D, DELAY) -- set the repeating delay.
+
+		In both cases, 0 can be used for the default behaviour (delays 15 and 4)
+
 
 --------------------------------------------------------------------------------------------
 	Audio
@@ -1435,14 +1476,16 @@ Welcome to PICO-8!
 
 			1. When a cartridge is loaded
 			2. When a cartridge is run
-			3. When exiting any of the editor modes
+			3. When exiting any of the editor modes // can turn off with: poke(0x5ffe,1)
+
 
 
 	:: Base ram memory layout
+
 		0x0    gfx
 		0x1000 gfx2/map2 (shared)
 		0x2000 map
-		0x3000 gfx_props
+		0x3000 gfx flags
 		0x3100 song
 		0x3200 sfx
 		0x4300 user data
@@ -1538,7 +1581,7 @@ Welcome to PICO-8!
 	cos x
 	sin x
 
-		Returns the cosine of x, where 1.0 indicates a full circle
+		Returns the cosine of x, where 1.0 indicates a full turn
 		sin is inverted to suit screenspace
 		e.g. sin(0.25) returns -1
 
@@ -1546,14 +1589,15 @@ Welcome to PICO-8!
 		paste the following snippet near the start of your program:
 	
 		cos1 = cos function cos(angle) return cos1(angle/(3.1415*2)) end
-		sin1 = sin function sin(angle) return sin1(-angle/(3.1415*2)) end
-	
+		sin1 = sin function sin(angle) return -sin1(angle/(3.1415*2)) end
+
 
 	atan2 dx dy
 
 		Converts dx, dy into an angle from 0..1
 		As with cos/sin, angle is taken to run anticlockwise in screenspace
 		e.g. atan(1, -1) returns 0.125
+
 
 	sqrt x
 
@@ -1575,17 +1619,44 @@ Welcome to PICO-8!
 		The seed is automatically randomized on cart startup
 
 
-	Binary Operations
+	Bitwise Operations
 
-		band x y
-		bor  x y
-		bxor x y
-		bnot x
-		rotl x y
-		rotr x y
-		shl  x n -- shift left n bits
-		shr  x n -- arithmetic right shift
-		lshr x n -- logical right shift
+		Bitwise operations are similar to logical expressions, except that they work at the bit level.
+
+		Say you have two numbers (written here in binary using the "0b" prefix): 
+
+			X = 0b1010
+			Y = 0b0110
+
+		A bitwise AND will give you bits set when the corresponding bits in X /and/ Y are both set
+
+		PRINT(BAND(X,Y)) -- result:0b0010 (2 in decimal)
+
+		There are 9 bitwise functions available in PICO-8:
+
+			band x y -- both bits are set
+			bor  x y -- either bit is set
+			bxor x y -- either bit is set, but not both of them
+			bnot x   -- each bit is not set
+			shl  x n -- shift left n bits (zeros come in from the right)
+			shr  x n -- arithmetic right shift (the left-most bit state is duplicated)
+			lshr x n -- logical right shift (zeros comes in from the left)
+			rotl x n -- rotate all bits in x left by n places
+			rotr x n -- rotate all bits in x right by n places
+
+		Operator versions are also available for the first 7: & | ^^ ~ << >> >>>
+
+		For example: PRINT(67 & 63) -- result:3  equivalent to BAND(67,63)
+
+		Operators are slightly faster than their corresponding functions. They behave exactly the same,
+		except that if any operands are not numbers the result is a runtime error (the function versions
+		instead default to a value of 0).
+
+
+	Integer Division
+
+		Integer division can be performed with a \
+		print(9\2) -- result:4  equivalent to flr(7/2)
 
 
 --------------------------------------------------------------------------------------------------------
@@ -1612,10 +1683,11 @@ Welcome to PICO-8!
 
 	s = "the quick brown fox"
 	
+
 	-- length
 	
 		print(#s)          --> 19
-	
+
 	
 	-- joining strings
 		
@@ -1626,6 +1698,16 @@ Welcome to PICO-8!
 	
 		print(sub(s,5,9))  --> "quick"
 		print(sub(s,5))  --> "quick brown fox"
+
+
+	-- conversion
+
+		tostr(17)      -- returns "17"
+		tostr(17,true) -- returns "0x0011.0000"
+		tonum("17")    -- returns 17
+		chr(64)        -- returns "@"
+		ord("@")       -- returns 64
+		ord("123",2)   -- returns 50 (the second character: "2")
 
 
 --------------------------------------------------------------------------------------------------------
@@ -1640,19 +1722,21 @@ Welcome to PICO-8!
 
 		returns val as a string
 		
-		if hex is true and val is a number, an unsigned hexadecimal writing of 
+		If hex is true and val is a number, an unsigned hexadecimal writing of 
 		the number is returned in the format "0x0000.0000". You can use this to
 		inspect the internal representation of PICO-8 numbers.
+
+		If val is a boolean, it is written as "true" or "false"
 		
-		if val is a boolean, it is written as "true" or "false"
-		
-		all other val types are written as "[typename]"
+		All other val types are written as "[typename]" (use hex to include a hex
+			identity in the string if available)
 		
 	tonum val
 	
 		converts val to a number
 		if val is a string, the number is taken to be decimal unless prefixed with "0x"
 		if the conversion fails, tonum returns no value.
+
 
 --------------------------------------------------------------------------------------------
 	Cartridge Data
@@ -1868,7 +1952,7 @@ Welcome to PICO-8!
 	
 		Coroutines offer a way to run different parts of a program in a somewhat concurrent 
 		way, similar to threads. A function can be called as a coroutine, suspended with 
-		yield() any number of times, and then resumed again at the same point.
+		yield() any number of times, and then resumed again at the same points.
 		
 			function hey()
 				print("doing something")
@@ -1918,6 +2002,125 @@ Welcome to PICO-8!
 --------------------------------------------------------------------------------------------
 	VERSION HISTORY
 --------------------------------------------------------------------------------------------
+
+
+	v0.2.0
+
+		Added: 8-bit character set with kana, alt font
+		Added: ord(), chr()
+		Added: SFX / Pattern organiser view
+		Added: SFX edit buttons on pattern channels
+		Added: tline // textured line drawing
+		Added: SPLORE automatically updates BBS carts when online
+		Added: Search for similar (shared tags) cartridges, or by thread
+		Added: predefined fillp() pattern values assigned to glyphs
+		Added: btnp() custom delays (poke 0x5f5c, 0x5f5d)
+		Added: "." shorthand command for advancing a single frame (calls _update, _draw if they exist)
+		Added: Current editor/cart view is recorded every 3 seconds to [app_data]/activity_log.txt
+		Added: Cutting (ctrl-x) and pasting selected sprites while in map view to also adjust map references to those sprites
+		Added: Clipboard is supported in the html exports (with some limitations) // load #wobblepaint for an example.
+		Added: Can load .lua files as cartridges
+		Added: Operators: ..= ^= \ \= & | ^^ << >> >>> ~ &= |= ^^= <<= >>= >>>= @ @@ $
+		Added: New demo carts: waves.p8 dots3d.p8 auto2d.p8 wander.p8 cast.p8 jelpi.p8 (use INSTALL_DEMOS)
+		Added: Extra pre-installed games: Embrace, 8 Legs to Love (use INSTALL_GAMES)
+		Added: Splore cart labels for .p8 files
+		Added: Now 16 code tabs (click on the rightmost ones to scroll)
+		Added: ipairs()
+		Added: SAVE from commandline to quick-save current cartridge (same as ctrl-s) 
+		Added: BACKUP from commandline to save a backup of current cartridge
+		Added: CPU usage widget (ctrl-p while running cartridge)
+		Added: Button / dpad states exposed in memory at 0x5f4c (8 bytes)
+		Added: Random number generator state exposed at 0x5f44 (8 bytes)
+		Added: pico8_dyn version is included when exporting to Raspberry Pi
+		Added: allow_function_keys option in config.txt (CTRL 6..9 are now preferred -- will phase out F6..F9 if practical)
+		Added: Visible tab characters (draw_tabs in config.txt)
+		Added: pal(16,{1,2,3..}) means: use the value for each key 0..15 in a table
+		Added: palt(16, bitfield) means: set the colour transparency for all 16 colours, starting with the highest bit
+		Added: Options menu for binary exports (sound / fullscreen / controls)
+		Added: Shape drawing tools in sprite and map editor
+		Improved: Miscellaneous HTML shell / player optimisations and adjustments
+		Improved: Lower cpu usage for small foreground_sleep_ms values (changed host event loop & fps switching strategy)
+		Changed: This update is called 0.2.0, not 0.1.12d! (grew into plans for 0.2.0, and bumped cart version number)
+		Changed: negative numbers expressed with a '-' count as a single token
+		Changed: glitchy reset effect does not leave residue in base RAM (but maybe on screen when using sprites / tiles)
+		Changed: sset() with 2 parameters uses the draw state colour as default
+		Changed: line() or line(col) can be used to skip drawing and set the (line_x1, line_y1) state on the next call to line(x1,y1)
+		Changed: vital system functions (load, reboot etc.) can only be overwritten during cartridge execution  
+		Changed: sqrt(x) is now more accurate, and a little faster than x^.5
+		Changed: sqrt(x) returns 0 for negative values of x
+		Changed: btnp() delay and repeats now work independently per-button
+		Changed: pairs(nil) returns an empty function
+		Changed: Default screenshot scale (now 4x), gif scale (now 3x)
+		Changed: gif_len now means the length when no start point is specified (used to be the maximum recordable length)
+		Changed: (Multicarts) When loading data from many different carts, the swap delay maxes out at ~2 seconds
+		Changed: (Raspberry Pi) removed support for (and dependency on) libsndio
+		Changed: camera(), cursor(), color(), pal(), palt(), fillp(), clip() return their previous state
+		Changed: Can not call folder() from a BBS cart running under splore
+		Changed: F9 resets the video, so that multiple presses results in a sequence of clips that can be joined to together
+		Changed: color() defaults to 6 (was 0)
+		Changed: Backed up filenames are prefixed with a timestamp.
+		Changed: Automatically start on the (host's) current path if it is inside PICO-8's root path
+		Changed: tostr(x,true) can also be used to view the hex value of functions and tables (uses Lua's tostring)
+		Changed: Can hold control when clicking number fields (spd, pattern index etc.) to increment/decrement by 4 (was shift)
+		Fixed: HTML exports running at 60fps sometimes appear to repeatedly speed up and slow down
+		Fixed: HTML export layout: sometimes broken -- option buttons overlapping in the same place 
+		Fixed: __tostring metatable methods not observed by tostr() / print() / printh()
+		Fixed: Mac OSX keyboard permissions (fixed in SDL2 0.2.12)
+		Fixed: Audio mixer: SFX with loop_end > 32 would sometimes fail to loop back
+		Fixed: btn() firing a frame late, and not on the same frame as stat(30)
+		Fixed: #include can not handle files saved by some Windows text editors in default format (w/ BOM / CRLF)
+		Fixed: Exports do not flatten #include'd files
+		Fixed: Default window size has too much black border (now reverted to previous default)
+		Fixed: Functions yielded inbetween frames occasionally push an extra return value (type:function) to the stack
+		Fixed: can't load png-encoded carts with code that starts with a :
+		Fixed: .gif output unnecessarily large
+		Fixed: .gif recording skipping frames when running at 15fps	
+		Fixed: printh does not convert to unicode when writing to console or to a file
+		Fixed: cart data sometimes not flushed when loading another cart during runtime
+		Fixed: Can not navigate patterns with -,+ during music playback
+		Fixed: Mouse cursor not a hand over some buttons
+		Fixed: Laggy mouseover messages (e.g. showing current colour index, or map coordinates)
+		Fixed: Can't paste glyphs into search field
+		Fixed: Tab spacing always jumps config.tab_spaces instead of snapping to next column
+		Fixed: -p switch name is wrong (was only accepting "-param" in 0.12.*
+		Fixed: Code editor highlighting goes out of sync after some operations
+		Fixed: Multicart communication problem (affecting PICOWARE)
+		Fixed: time() speeds up after using the RESUME command
+		Fixed: Audio state is clobbered when using the RESUME command
+		Fixed: Audio glitch when fading out music containing slide effect (1)
+		Fixed: Toggling sound from splore cart->options menu has no effect
+		Fixed: Devkit keyboard works when paused
+		Fixed: "-32768 % y" gives wrong results
+		Fixed: Replacing all text in code editor breaks undo history
+		Fixed: Double click to select last word in code does not include the last character
+		Fixed: Weird block comment behavior in code editor
+		Fixed: HTML export: cart names can not contain quotes
+		Fixed: HTML export: menu button layout under chromium
+		Fixed: HTML export: Adding content above cartridge breaks mobile layout
+		Fixed: HTML export: Can touch-drag PICO-8 screen around (breaks simulated mouse input)
+		Fixed: LOAD("#ABC") does not always immediately yield
+		Fixed: Infinite RUN() loop crashes PICO-8
+		Fixed: Mouse cursor is not a finger on top of most "pressable" button-style elements
+		Fixed: CD command fails when root_path is relative (e.g. "pico8 -root_path .")
+		Fixed: poke in fill pattern addresses (0x5f31..0x5f33) discards some bits
+		Fixed: After using ctrl-click in map editor, can not modify map outside that region
+		Fixed: Shift-selecting sprites from bottom right to top left selects wrong region
+		Fixed: Changing GIF_LEN from PICO-8 commandline sometimes breaks gif saving
+		Fixed: pget() sometimes returns values with high bits set
+		Fixed: Preprocessor: unary operator lhs is not separated in some cases (e.g. x=1y+=1)
+		Fixed: Preprocessor: ? shorthand prevents other preprocess replacements on same line
+		Fixed: Preprocessor: fails when multiple shorthand expressions + strings containing brackets appear on the same line
+		Fixed: Loading a .p8 file with too many tabs discards the excess code.
+		Fixed: Map editor's stamp tool wraps around when stamping overlapping the right edge.
+		Fixed: Very quick/light tap events sometimes do not register
+		Fixed: SFX tracker mode: can't copy notes with shift-cursors before clicking (whole sfx is copied instead)
+		Fixed: "..." breaks syntax highlighting
+		Fixed: Click on text, press up/down -> cursor reverts to previous horizontal position
+		Fixed: CTRL-[a..z] combinations processed twice under some linux window managers
+		Fixed: ctrl-up/down to jump to functions in the code editor breaks when "function" is followed by a tab
+		Fixed: map & gfx drawing selection is not applied consistently between tools
+		Fixed: Using right mouse button to pick up a colour / tile value sometimes also applies current tool
+
 
 	v0.1.12c
 
