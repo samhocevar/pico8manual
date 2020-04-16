@@ -1,6 +1,6 @@
 ============================================================================================
 
-	PICO-8 v0.2.0
+	PICO-8 v0.2.0b
 	https://www.pico-8.com
 	(c) Copyright 2014-2020 Lexaloffle Games LLP
 	Author: Joseph White // hey@lexaloffle.com
@@ -80,7 +80,7 @@ Welcome to PICO-8!
 	END
 
 	Now press Esc to return to the console and type RUN (or press CTRL-R) to see it in action.
-	Pleae refer to the demo cartridges for more complex programs (type INSTALL_DEMOS).
+	Please refer to the demo cartridges for more complex programs (type INSTALL_DEMOS).
 	
 	If you want to store your program for later, use the SAVE command:
 	
@@ -113,6 +113,9 @@ Welcome to PICO-8!
 	RUN
 	
 	Press escape to stop the program, and once more to enter editing mode.
+
+	A small collection of BBS carts can also be installed with: INSTALL_GAMES
+
 
 
 :: File System
@@ -1189,28 +1192,46 @@ Welcome to PICO-8!
 	
 	pal c0 c1 [p]
 
-		Draw all instances of colour c0 as c1 in subsequent draw calls
+		Swap palette colour c0 for c1, either in subsequent draw calls, or screen-wide.
 
-		pal() to reset to system defaults (including transparency values and fill pattern)
+		PICO-8's draw state has two palettes. p specifies which one to modify, and defaults to 0:
+
+			0 draw palette   : colours are remapped on draw     // e.g. to re-colour sprites
+			1 screen palette : colours are remapped on display  // e.g. for fades or screen-wide effects
+
+		For example, to swap colour 12 (blue) for colour 8 (red) when drawing a sprite:
+
+			PAL(8,12)
+			SPR(1,60,60)
+
+		PAL() to reset to system defaults (including transparency values and fill pattern)
+
+
+	pal tbl [p]
+
+		When the first parameter of pal is a table, colours are assigned for each entry.
+		For example, to re-map colour 12 and 14 to red:
+
+			PAL({[12]=9, [14]=8})
 		
-		Two types of palette (p; defaults to 0)
-			0 draw palette   : colours are remapped on draw    // e.g. to re-colour sprites
-			1 screen palette : colours are remapped on display // e.g. for fades
-		c0 colour index 0..15
-		c1 colour index to map to
+		Or to re-colour the whole screen shades of gray (including everything that is already drawn):
 
-		When c0 is 16 and c1 is a table, a colour to the value of each key 0..15
-		For example, to re-map colour 12 and 14 to red: pal(16,{[12]=8,[14]=8})
+			PAL({1,1,5,5,5,6,7,13,6,7,7,6,13,6,7}, 1)
+
 
 	palt c [t]
 
 		Set transparency for colour index to t (boolean)
 		Transparency is observed by spr(), sspr(), map() and tline()
-		e.g. palt(8, true) -- red pixels not drawn
+		
+			PALT(8, TRUE) -- red pixels not drawn in subsequent sprite/tline draw calls
+
 		palt() resets to default: all colours opaque except colour 0
 
 		When c is the only parameter, it is treated as a bitfield used to set all 16 values.
-		For example: to set colours 0 and 1 as transparent: palt(0b1100000000000000)
+		For example: to set colours 0 and 1 as transparent:
+
+			PALT(0b1100000000000000)
 
 
 	spr n x y [w h] [flip_x] [flip_y]
@@ -2003,6 +2024,17 @@ Welcome to PICO-8!
 	VERSION HISTORY
 --------------------------------------------------------------------------------------------
 
+	v0.2.0b
+
+		Changed: #include directive can be preceeded by whitespace 
+		Changed: Activity logger records nothing after idle for 30 seconds
+		Fixed: Mouse cursor movement in editor is not smooth
+		Fixed: Screen palette doesn't reset after exiting splore
+		Fixed: PALT() returns 0 instead of previous state as bitfield
+		Fixed: Rectangle and line tools broken when used in map editor
+		Fixed: INSTALL_GAMES under Windows produces broken cart files
+		Fixed: Stored multicart sometimes has code section truncated (fails to load())
+
 
 	v0.2.0
 
@@ -2021,7 +2053,7 @@ Welcome to PICO-8!
 		Added: Clipboard is supported in the html exports (with some limitations) // load #wobblepaint for an example.
 		Added: Can load .lua files as cartridges
 		Added: Operators: ..= ^= \ \= & | ^^ << >> >>> ~ &= |= ^^= <<= >>= >>>= @ @@ $
-		Added: New demo carts: waves.p8 dots3d.p8 auto2d.p8 wander.p8 cast.p8 jelpi.p8 (use INSTALL_DEMOS)
+		Added: New demo carts: waves.p8 dots3d.p8 automata.p8 wander.p8 cast.p8 jelpi.p8 (use INSTALL_DEMOS)
 		Added: Extra pre-installed games: Embrace, 8 Legs to Love (use INSTALL_GAMES)
 		Added: Splore cart labels for .p8 files
 		Added: Now 16 code tabs (click on the rightmost ones to scroll)
@@ -2034,13 +2066,14 @@ Welcome to PICO-8!
 		Added: pico8_dyn version is included when exporting to Raspberry Pi
 		Added: allow_function_keys option in config.txt (CTRL 6..9 are now preferred -- will phase out F6..F9 if practical)
 		Added: Visible tab characters (draw_tabs in config.txt)
-		Added: pal(16,{1,2,3..}) means: use the value for each key 0..15 in a table
-		Added: palt(16, bitfield) means: set the colour transparency for all 16 colours, starting with the highest bit
+		Added: pal({1,2,3..}) means: use the value for each key 0..15 in a table
+		Added: palt(bitfield) means: set the colour transparency for all 16 colours, starting with the highest bit
 		Added: Options menu for binary exports (sound / fullscreen / controls)
 		Added: Shape drawing tools in sprite and map editor
 		Improved: Miscellaneous HTML shell / player optimisations and adjustments
 		Improved: Lower cpu usage for small foreground_sleep_ms values (changed host event loop & fps switching strategy)
 		Changed: This update is called 0.2.0, not 0.1.12d! (grew into plans for 0.2.0, and bumped cart version number)
+		ChangeD: Reverted cheaper 0.1.12* costs on bitwise operators & peek (recommend replacing with operators if need)
 		Changed: negative numbers expressed with a '-' count as a single token
 		Changed: glitchy reset effect does not leave residue in base RAM (but maybe on screen when using sprites / tiles)
 		Changed: sset() with 2 parameters uses the draw state colour as default
