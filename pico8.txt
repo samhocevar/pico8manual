@@ -1,6 +1,6 @@
 ============================================================================================
 
-	PICO-8 v0.2.0b
+	PICO-8 v0.2.0c
 	https://www.pico-8.com
 	(c) Copyright 2014-2020 Lexaloffle Games LLP
 	Author: Joseph White // hey@lexaloffle.com
@@ -476,8 +476,13 @@ Welcome to PICO-8!
 	CTRL-B to comment / uncomment selected block
 
 	To enter special characters that represent buttons (and other glyphs), use SHIFT-L,R,U,D,O,X
-	To enter katakana or hiragana, use SHIFT-K, and then SHIFT-P to toggle between the two.
-	
+	There are 3 additional font entry modes that can be toggled:
+
+		CTRL_J Hiragana   // type romanji equivalents (ka, ki, ku..)
+		CTRL-K Katakana   // + shift-0..9 for extra symbols
+		CTRL-P Puny font  // hold shift for the standard font
+
+
 	:: Tabs
 	
 		Click the [+] button at the top to add a new tab.
@@ -1397,11 +1402,13 @@ Welcome to PICO-8!
 			// P0: bits 0..5  P1: bits 8..13
 	
 		Default keyboard mappings to player buttons:
-			player 0: cursors, Z,X / C,V / N,M
-			player 1: ESDF, LSHIFT,A / TAB,Q,E
 
-		** Note that when using a physical gamepad, certain combinations of buttons can be awkward 
-			(e.g. UP to jump/accelerate instead of X or O) or even impossible (LEFT + RIGHT)
+			player 0: [DPAD]: cursors, [O]: Z C N   [X]: X V M
+			player 1: [DPAD]: SFED,    [O]: LSHIFT  [X]: TAB W  Q A
+
+		** Note for cart authors: when
+			Using a physical gamepad, certain combinations of buttons can be awkward
+			(UP to jump/accelerate instead of [X] or [O]) or even impossible (LEFT + RIGHT)
 
 
 	btnp [i [p]]
@@ -2023,6 +2030,18 @@ Welcome to PICO-8!
 --------------------------------------------------------------------------------------------
 	VERSION HISTORY
 --------------------------------------------------------------------------------------------
+
+
+	v0.2.0c
+
+		Changed: Compressed size limit now 0x3d00 bytes (reclaimed an unused 0x100 byte block)
+		Fixed: >>>= operator (was doing a >>= replacement instead) 
+		Fixed: #including large .lua files causes crashes, weird behaviour
+		Fixed: Sandboxed CSTORE: writing partial data to another embedded cart clobbers the remaining data.
+		Fixed: Multicart code storing regression introduced in 0.2.0 (code from head cart stored in other carts)
+		Fixed: Can not edit spritesheet after panning
+		Fixed: Junk error messages when syntax error contains one of the new operators
+
 
 	v0.2.0b
 
