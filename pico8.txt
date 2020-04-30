@@ -1,6 +1,6 @@
 ============================================================================================
 
-	PICO-8 v0.2.0d
+	PICO-8 v0.2.0e
 	https://www.pico-8.com
 	(c) Copyright 2014-2020 Lexaloffle Games LLP
 	Author: Joseph White // hey@lexaloffle.com
@@ -346,7 +346,7 @@ Welcome to PICO-8!
 		This will use the file {application data}/pico-8/plates/one_button.html as the
 		html shell, replacing a special string, ##js_file##, with the .js filename.
 
-		Use -w to export as .wasm + .js  // experimental! But ~100k smaller when zipped
+		Use -w to export as .wasm + .js:  // ** still experimental! **
 		> EXPORT -W FOO.HTML
 
 
@@ -371,7 +371,18 @@ Welcome to PICO-8!
 
 
 		Technical note: Windows file systems do not support the file metadata needed to create a
-			Linux or Mac executable. Binaries will still export from PICO-8 running under Windows,
+			Linux or Mac executable. PICO-8 works around this by exporting zip files in a way
+			that preserves the file attributes, as long as the zip files are not re-packaged.
+
+			Otherwise, a Linux user who then downloads the binaries may need to "chmod +x foo" 
+			the file to run it, and Mac user would need to "chmod +x foo.app/Contents/MacOS/foo"
+
+			This issue can be avoided by distributing exported .zip files as-is after using the
+			EXPORT command on Windows.
+
+
+
+Binaries will still export from PICO-8 running under Windows,
 			but a Linux user would then need to manually "chmod +x foo" the file to run it, or a
 			Mac user would need to open Terminal and: "chmod +x foo.app/Contents/MacOS/foo"
 
@@ -941,13 +952,16 @@ Welcome to PICO-8!
 
 	stop [message]
 	
-		Stop the cart and optionally print a message
+		Stop the cart and optionally print a message.
 
 
 	resume
 	
-		Continue from the existing program state, by re-entering the mainloop (requires _update / _draw)
-		Use a single "." from the commandline to advance a single frame.
+		Resume the program. Use R for short.
+
+		Use a single "." from the commandline to advance a single frame. This enters
+		frame-by-frame mode, that can be read with stat(110). While frame-by-frame mode
+		is active, entering an empty command (by pressing enter) advances one frames.
 
 
 	reboot
@@ -1019,6 +1033,7 @@ Welcome to PICO-8!
 		90..95  Local time
 
 		100     Current breadcrumb label, or nil
+		110		Returns true when in frame-by-frame mode
 
 
 	extcmd x
@@ -2079,6 +2094,25 @@ Welcome to PICO-8!
 --------------------------------------------------------------------------------------------
 	VERSION HISTORY
 --------------------------------------------------------------------------------------------
+
+	v0.2.0e
+
+		Added: zip file creation (with preserved file attributes) when exporting binaries
+		Added: cpu working animation when cpu usage > 120 skipped frames
+		Improved: stop() / resume now works at the instruction level
+		Fixed: tline clipping broken (from 0.2.0d)
+		Fixed: cpu counting is wrong inside coroutines
+		Fixed: coroutines interrupted by garbage collection
+		Fixed: code compression suddenly much worse for carts > 32k chars
+		Fixed: code compression ratio can be less than 1 in extreme cases		
+		Fixed: pasting a string ending in '1' into the command prompt opens the editor
+		Fixed: html export can run out of pre-allocated heap when doing heavy string operations
+		Fixed: hex memory addresses displayed in puny font on windows
+		Fixed: devkit mouse message shown once per cart -- should be once per chain of carts
+		Fixed: can't paste sfx notes after moving to another sfx via keyboard
+		Fixed: copying note select vs. sfx vs. pattern range is ambiguous
+		Fixed: crash after redefining type()
+
 
 	v0.2.0d
 
