@@ -1,6 +1,6 @@
 ============================================================================================
 
-	PICO-8 v0.2.0e
+	PICO-8 v0.2.0f
 	https://www.pico-8.com
 	(c) Copyright 2014-2020 Lexaloffle Games LLP
 	Author: Joseph White // hey@lexaloffle.com
@@ -12,6 +12,7 @@
 		GIFLIB http://giflib.sourceforge.net/
 		WiringPi http://wiringpi.com/
 		libb64 by Chris Venter
+		miniz by Rich Geldreich
 
 ============================================================================================
 
@@ -1608,7 +1609,7 @@ Binaries will still export from PICO-8 running under Windows,
 	Alternatively, the following operators can be used to peek (but not poke), and are slightly faster:
 
 		@ADDR  -- PEEK(ADDR)
-		@@ADDR -- PEEK2(ADDR)
+		%ADDR  -- PEEK2(ADDR)
 		$ADDR  -- PEEK4(ADDR)
 
 
@@ -2095,6 +2096,17 @@ Binaries will still export from PICO-8 running under Windows,
 	VERSION HISTORY
 --------------------------------------------------------------------------------------------
 
+	v0.2.0f
+
+		Changed: @@ operator (peek2) to %
+		Fixed: Exported wasm crashes on boot when code contains a numerical constant out of range.
+		Fixed: HTML Shell treats controller shoulder buttons as MENU; easy to accidentally bump.
+		Fixed: shift operators behaviour undefined for negative values of n (now: x << n means x >> -(n\1))
+		Fixed: >>> operator behaviour does not match lshr(a,b) when b >= 32
+		Fixed: INFO crashes when code is close to 64k of random characters
+		Fixed: Code editor undo step not stored when starting to edit a new line (hard to see what happened)
+
+
 	v0.2.0e
 
 		Added: zip file creation (with preserved file attributes) when exporting binaries
@@ -2185,7 +2197,7 @@ Binaries will still export from PICO-8 running under Windows,
 		Added: Cutting (ctrl-x) and pasting selected sprites while in map view to also adjust map references to those sprites
 		Added: Clipboard is supported in the html exports (with some limitations) // load #wobblepaint for an example.
 		Added: Can load .lua files as cartridges
-		Added: Operators: ..= ^= \ \= & | ^^ << >> >>> ~ &= |= ^^= <<= >>= >>>= @ @@ $
+		Added: Operators: ..= ^= \ \= & | ^^ << >> >>> ~ &= |= ^^= <<= >>= >>>= @ @@(update: @@ replaced with %) $
 		Added: New demo carts: waves.p8 dots3d.p8 automata.p8 wander.p8 cast.p8 jelpi.p8 (use INSTALL_DEMOS)
 		Added: Extra pre-installed games: Embrace, 8 Legs to Love (use INSTALL_GAMES)
 		Added: Splore cart labels for .p8 files
