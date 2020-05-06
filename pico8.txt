@@ -1,6 +1,6 @@
 ============================================================================================
 
-	PICO-8 v0.2.0f
+	PICO-8 v0.2.0g
 	https://www.pico-8.com
 	(c) Copyright 2014-2020 Lexaloffle Games LLP
 	Author: Joseph White // hey@lexaloffle.com
@@ -2095,6 +2095,16 @@ Binaries will still export from PICO-8 running under Windows,
 --------------------------------------------------------------------------------------------
 	VERSION HISTORY
 --------------------------------------------------------------------------------------------
+
+	v0.2.0g
+
+		Added: Window title shows current cartridge filename while editing
+		Changed: ~ preceeding a numerical constant (e.g. ~1) counts as a single token
+		Fixed: >>> operator behaviour does not match lshr(a,b) when b >= 32 (again)
+		Fixed: PICO-8 freezes when shift by -0x8000 
+		Fixed: .p8 format does not store extpal label colours
+		Fixed: Can not save screenshot when filename contains ":"
+
 
 	v0.2.0f
 
