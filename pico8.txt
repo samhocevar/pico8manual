@@ -1402,7 +1402,7 @@ Binaries will still export from PICO-8 running under Windows,
 			K: 10  v:BLAH
 			K: HELLO  v:3
 			K: BLUE  v:5
-
+		
 
 --------------------------------------------------------------------------------------------
 	Input
@@ -1751,6 +1751,7 @@ Binaries will still export from PICO-8 running under Windows,
 
 		PRINT(9\2) -- result:4  equivalent to flr(9/2)
 
+	
 
 --------------------------------------------------------------------------------------------------------
 	Custom Menu Items
@@ -2041,6 +2042,24 @@ Binaries will still export from PICO-8 running under Windows,
 			raw access to the table, as if no metamethods were defined
 
 
+
+	:: Function Arguments
+
+		The list of function arguments (or remain arguments) can be specifed with ... 
+
+			function preprint(pre, s, ...)
+				local s2 = pre..tostr(s)
+				print(s2, ...) -- pass the remaining arguments on to print()
+			end
+
+		To accept a variable number of arguments:
+
+			function foo(...)
+				local args={...} -- becomes a table of arguments
+				foreach(args,print)
+			end
+
+
 	:: Coroutines
 	
 		Coroutines offer a way to run different parts of a program in a somewhat concurrent 
@@ -2095,6 +2114,14 @@ Binaries will still export from PICO-8 running under Windows,
 --------------------------------------------------------------------------------------------
 	VERSION HISTORY
 --------------------------------------------------------------------------------------------
+
+
+	v0.2.0i
+
+		Added: pack(), unpack()
+		Changed: bitplane read/write mask only reset after finished running program
+		Fixed: tline() doesn't draw anything when the layers argument is not given
+
 
 	v0.2.0h
 
