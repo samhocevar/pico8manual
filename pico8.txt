@@ -1,6 +1,6 @@
 ============================================================================================
 
-	PICO-8 v0.2.0h
+	PICO-8 v0.2.1
 	https://www.pico-8.com
 	(c) Copyright 2014-2020 Lexaloffle Games LLP
 	Author: Joseph White // hey@lexaloffle.com
@@ -67,18 +67,18 @@ Welcome to PICO-8!
 	program allows you to move a circle around with the cursor keys. Press Esc to switch to
 	the code editor and type or copy & paste the following code:
 
-	X = 64  Y = 64
-	FUNCTION _UPDATE()
-	 IF (BTN(0)) THEN X=X-1 END
-	 IF (BTN(1)) THEN X=X+1 END
-	 IF (BTN(2)) THEN Y=Y-1 END
-	 IF (BTN(3)) THEN Y=Y+1 END
-	END
+		X = 64  Y = 64
+		FUNCTION _UPDATE()
+		 IF (BTN(0)) THEN X=X-1 END
+		 IF (BTN(1)) THEN X=X+1 END
+		 IF (BTN(2)) THEN Y=Y-1 END
+		 IF (BTN(3)) THEN Y=Y+1 END
+		END
 
-	FUNCTION _DRAW()
-	 CLS(5)
-	 CIRCFILL(X,Y,7,14)
-	END
+		FUNCTION _DRAW()
+		 CLS(5)
+		 CIRCFILL(X,Y,7,14)
+		END
 
 	Now press Esc to return to the console and type RUN (or press CTRL-R) to see it in action.
 	Please refer to the demo cartridges for more complex programs (type INSTALL_DEMOS).
@@ -197,7 +197,7 @@ Welcome to PICO-8!
 	
 	Glyph characters (typed with shift-A..Z) are stored in .p8 format and in the host operating 
 	system's clipboard as rough unicode equivalents. 
-	
+
 
 :: Backups
 
@@ -344,8 +344,9 @@ Welcome to PICO-8!
 		Optionally provide a custom html template with the -p switch:
 		> EXPORT FOO.HTML -P ONE_BUTTON
 
-		This will use the file {application data}/pico-8/plates/one_button.html as the
-		html shell, replacing a special string, ##js_file##, with the .js filename.
+		This will use the file {application data}/pico-8/plates/one_button.html as the html shell, 
+		replacing a special string "##js_file##" (without quotes), with the .js filename, and
+		optionally replacing the string "##label_file##" with the cart's label image as a data url.
 
 		Use -w to export as .wasm + .js:  // ** still experimental! **
 		> EXPORT -W FOO.HTML
@@ -364,22 +365,24 @@ Welcome to PICO-8!
 			-I N  Icon index N with a default transparent colour of 0 (black).
 			-S N  Size NxN sprites. Size 3 would be produce a 24x24 icon.
 			-C N  Treat colour N as transparent. Use 16 for no transparency.
-
+			
 		For example, to use a 2x2 sprite starting at index 32 in the spritesheet, 
 		using colour 12 as transparent:
 		
 			> EXPORT -I 32 -S 2 -C 12 FOO.BIN
 
+		To include an extra file in the output folders and archives, use the -E switch:
+
+			> EXPORT -E README.TXT FOO.BIN 
+
 
 		Technical note: Windows file systems do not support the file metadata needed to create a
 			Linux or Mac executable. PICO-8 works around this by exporting zip files in a way
-			that preserves the file attributes, as long as the zip files are not re-packaged.
+			that preserves the file attributes. It is therefore recommended that you distribute
+			the outputted zip files as-is to ensure users on other operating systems can run them.
 
 			Otherwise, a Linux user who then downloads the binaries may need to "chmod +x foo" 
 			the file to run it, and Mac user would need to "chmod +x foo.app/Contents/MacOS/foo"
-
-			This issue can be avoided by distributing exported .zip files as-is after using the
-			EXPORT command on Windows.
 
 
 
@@ -472,7 +475,6 @@ Binaries will still export from PICO-8 running under Windows,
 	- When you want to export a .png cartridge, use SAVE, not EXPORT. EXPORT will save only the spritesheet!
 
 
-
 ============================================================================================
 	Editor Modes
 ============================================================================================
@@ -509,6 +511,10 @@ Binaries will still export from PICO-8 running under Windows,
 		CTRL_J Hiragana   // type romanji equivalents (ka, ki, ku..)
 		CTRL-K Katakana   // + shift-0..9 for extra symbols
 		CTRL-P Puny font  // hold shift for the standard font
+
+		// By default, puny font characters are encoded as unicode replacements when copying/pasting,
+		// and both upper and lower case ASCII characters are pasted as regular PICO-8 characters.
+		// To copy/paste puny characters as uppercase ASCII, make sure puny mode (CTRL-P) is on.
 
 
 	:: Tabs
@@ -589,7 +595,14 @@ Binaries will still export from PICO-8 running under Windows,
 		Each one can be true (on) or false (off), and are accessed by
 		using the FSET and FGET functions. They are indexed from 0, from
 		the left (0,1,2..7). See fset() for more information.
-	
+
+	Loading .png files into the spritesheet
+
+		To load a png file of any size into the spritesheet, first select the sprite that
+		should be the top-left corner desitination, and then either type "IMPORT IMAGE_FILE.PNG"
+		or drag and drop the image file into the PICO-8 window. In both cases, the image is
+		colour-fitted to the current display palette.
+
 
 :: Map Editor
 
@@ -607,12 +620,15 @@ Binaries will still export from PICO-8 running under Windows,
 	Mousewheel or < and > to zoom (centered in fullscreen)
 
 	To move sprites in the spritesheet without breaking references to them in the map:
+		
+		1. Select the area of the map you would like to alter (defaults to the top half of the map)
+			// press ctrl-A twice to select the full map including shared memory
+		2. Select the sprites you would like to move (while still in map view), and press Ctrl-X
+		3. Select the destination sprite (also while still in map view) and press Ctrl-V
 
-		1. Back up your cartridge!
-		2. Optionally select the area of the map you would like to alter (defaults to top half)
-			// press ctrl-A twice for whole map including shared memory.
-		3. Select the sprites you would like to move (while still in map view), and press Ctrl-X
-		4. Select the destination sprite (also while still in map view) and press Ctrl-V
+		// Note: this operation modifies the undo history for both the map and sprite editors, but
+		// PICO-8 will try to keep them in sync where possible. Otherwise, changes caused by moving
+		// map sprites can be reverted by also manually undoing in the sprite editor.
 
 
 :: SFX Editor
@@ -972,6 +988,11 @@ Binaries will still export from PICO-8 running under Windows,
 		Useful for starting a new project
 
 
+	reset
+
+		Reset the draw state, including palette, camera position, clipping and fill pattern.
+
+
 	info
 	
 		Print out some information about the cartridge:
@@ -993,17 +1014,20 @@ Binaries will still export from PICO-8 running under Windows,
 		is not in progress, the current contents of the back buffer are copied to screen.
 
 
-	printh str [filename] [overwrite]
+	printh str [filename] [overwrite] [save_to_desktop]
 	
-		Print a string to host operating system's console for debugging.
+		Print a string to the host operating system's console for debugging.
 	
 		If filename is set, append the string to a file on the host operating system
-			// (in the current directory -- use FOLDER to view)
+			// (in the current directory by default -- use FOLDER to view)
+
 		Setting overwrite to true causes that file to be overwritten rather than appended.
+
+		Setting save_to_desktop to true saves to the desktop instead of the current path.
 		
 		Use a filename of "@clip" to write to the host's clipboard.
 			// use stat(4) to read the clipboard, but the contents of the clipboard are only
-			// available after pressing CTRL-V during runtime (for security reasons).
+			// available after pressing CTRL-V during runtime (for security).
 
 
 	time / t
@@ -1130,22 +1154,23 @@ Binaries will still export from PICO-8 running under Windows,
 	includes a camera position (for adding an offset to all coordinates), palette mapping 
 	(for recolouring sprites), clipping rectangle, a drawing colour, and a fill pattern.
 	
-	The draw state is reset each time a program is run. This is equivalent to calling:
-	clip() camera() pal() color()
+	The draw state is reset each time a program is run, or by calling reset().
 
 
 	Colours indexes:
-	
-	 0  black   1  dark_blue   2  dark_purple   3  dark_green  
-	 4  brown   5  dark_gray   6  light_gray    7  white
-	 8  red     9  orange     10  yellow       11  green       
-	12  blue   13  indigo     14  pink         15  peach
 		
+		 0  black   1  dark_blue   2  dark_purple   3  dark_green  
+		 4  brown   5  dark_gray   6  light_gray    7  white
+		 8  red     9  orange     10  yellow       11  green       
+		12  blue   13  indigo     14  pink         15  peach
 
-	clip [x y w h]
+
+
+	clip [x y w h] [clip_previous]
 
 		Sets the screen's clipping region in pixels
 		clip() to reset
+		When clip_previous is true, clip the new clipping region by the old one.
 
 	
 	pget x y
@@ -1217,6 +1242,12 @@ Binaries will still export from PICO-8 running under Windows,
 		If r is negative, the circle is not drawn
 
 
+	oval     x0 y0 x1 y1 [col]
+	ovalfill x0 y0 x1 y1 [col]
+
+		Draw an oval that is symmetrical in x and y (an ellipse), with the given bounding rectangle.
+
+
 	line x0 y0 [x1 y1] [col]
 
 		draw line
@@ -1227,23 +1258,33 @@ Binaries will still export from PICO-8 running under Windows,
 	rectfill x0 y0 x1 y1 [col]
 
 		Draw a rectangle or filled rectangle
+
+
 	
 	
 	pal c0 c1 [p]
 
-		Swap palette colour c0 for c1, either in subsequent draw calls, or screen-wide.
+		pal() swaps colour c0 for c1 for one of two palette re-mappings (p defaults to 0):
 
-		PICO-8's draw state has two palettes. p specifies which one to modify, and defaults to 0:
+		0: Draw Palette
+		
+			The draw palette re-maps colours when they are drawn. For example, an orange flower
+			sprite can be drawn as a red flower by setting the 9th palette value to 8:
 
-			0 draw palette   : colours are remapped on draw     // e.g. to re-colour sprites
-			1 screen palette : colours are remapped on display  // e.g. for fades or screen-wide effects
+			PAL(9,8)     -- draw subsequent orange (colour 9) pixels as red (colour 8)
+			SPR(1,70,60) -- any orange pixels in the sprite will be drawn with red instead
 
-		For example, to swap colour 12 (blue) for colour 8 (red) when drawing a sprite:
+			Changing the draw palette does not affect anything that was already drawn to the screen.
 
-			PAL(8,12)
-			SPR(1,60,60)
+		1: Display Palette
 
-		PAL() to reset to system defaults (including transparency values and fill pattern)
+			The display palette re-maps the whole screen when it is displayed at the end of
+			a frame. For example, if you boot PICO-8 and then type PAL(6,14,1), you can see all
+			of the gray (colour 6) text immediate change to pink (colour 14) even though it
+			has already been drawn. This is useful for screen-wide effects such as fading in/out.
+
+		PAL() resets to system defaults (including transparency values and fill pattern)
+
 
 
 	pal tbl [p]
@@ -1295,7 +1336,7 @@ Binaries will still export from PICO-8 running under Windows,
 	fillp p
 	
 		The PICO-8 fill pattern is a 4x4 2-colour tiled pattern observed by:
-			circ() circfill() rect() rectfill() pset() line()
+			circ() circfill() rect() rectfill() oval() ovalfill() pset() line()
 		
 		p is a bitfield in reading order starting from the highest bit. To calculate the value
 		of p for a desired pattern, add the bit values together:
@@ -1340,10 +1381,11 @@ Binaries will still export from PICO-8 running under Windows,
 --------------------------------------------------------------------------------------------
 	
 	
-	add t v
+	add t v [index]
 
 		Add value v to the end of table t.
 		Equivalent to t[#t+1] = v
+		If index is given then the element is inserted at that position
 
 			FOO={}        -- create empty table
 			ADD(FOO, 11)
@@ -1351,12 +1393,14 @@ Binaries will still export from PICO-8 running under Windows,
 			PRINT(FOO[2]) -- 22
 
 
-	del t v
-
+	del  t [v]
+	
 		Delete the first instance of value v in table t
 		The remaining entries are shifted left one index to avoid holes.
-		Note that v is the value of the item to be deleted, not the index into the table!
-		del() can be called safely on a table's item while iterating over that table.
+		Note that v is the value of the item to be deleted, not the index into the table.
+		To remove an item at a particular index, use deli.
+		When v is not given, the last element in the table is removed.
+		del returns the deleted item, or returns no value when nothing was deleted.
 
 			A={1,10,2,11,3,12}
 			FOR ITEM IN ALL(A) DO
@@ -1364,6 +1408,16 @@ Binaries will still export from PICO-8 running under Windows,
 			END
 			FOREACH(A, PRINT) -- 10,11,12
 			PRINT(A[3])       -- 12
+
+	deli t [i]
+
+		Like del(), but remove the item from table t at index i.
+
+
+	count t [v]
+
+		Returns the length of table t (same as #t)
+		When v is given, returns the number of instances of v in that table.
 
 
 	all t
@@ -1775,33 +1829,67 @@ Binaries will still export from PICO-8 running under Windows,
 	Strings
 --------------------------------------------------------------------------------------------------------
 
-	s = "the quick brown fox"
-	
+	Strings in Lua are written either in single or double quotes or with matching [[ ]] brackets:
 
-	-- length
+		s = "the quick"
+		s = 'brown fox';
+		s = [[
+			jumps over
+			multiple lines
+		]]
 	
-		print(#s)          --> 19
+	The length of a string (number of characters) can be retrieved using the # operator:
+	
+		print(#s)
 
+	Strings can be joined using the .. operator. Joining numbers converts them to strings.
 	
-	-- joining strings
-		
 		print("three "..4) --> "three 4"
-	
-	
-	-- sub() to grab substrings
-	
-		print(sub(s,5,9))  --> "quick"
-		print(sub(s,5))  --> "quick brown fox"
 
 
-	-- conversion
+	tostr val [use_hex]
+
+		Convert val to a string. When val is a number, function or table, use_hex can be used to
+		include the raw hexidecimal value (most useful for inspecting the exactly value of numbers).
 
 		tostr(17)      -- returns "17"
 		tostr(17,true) -- returns "0x0011.0000"
+
+	tonum str
+
+		Convert a string to a number.
+
 		tonum("17")    -- returns 17
+
+	chr num
+	ord str [index]
+
+		Convert a character to its character code, or vice versa.
+		Use the index paramer to specify which character in a string to use.
+
 		chr(64)        -- returns "@"
 		ord("@")       -- returns 64
 		ord("123",2)   -- returns 50 (the second character: "2")
+
+	sub str pos0 [pos1]
+
+		Grab a substring from string str, from pos0 up to and including pos1.
+		When pos1 is not specified, the remainer of the string is returned.
+	
+		s = "the quick brown fox"
+		print(sub(s,5,9)) --> "quick"
+		print(sub(s,5))   --> "quick brown fox"
+
+
+	split str [separator] [convert_numbers] 
+
+		Split a string into a table of elements delimited by the given separator (defaults to ",").
+		When convert_numbers is true, numerical tokens are stored as numbers (defaults to true).
+		Empty elements are stored as empty strings.
+
+		split("1,2,3")               -- returns {1,2,3}
+		split("one:two:3",":",false) -- returns {"one","two","3"}
+		split("1,,2,")               -- returns {1,"",2,""}
 
 
 --------------------------------------------------------------------------------------------------------
@@ -1942,10 +2030,9 @@ Binaries will still export from PICO-8 running under Windows,
 			channel:
 				0x000..0x0fe    corresponds to gpio pin numbers; send 0x00 for LOW or 0xFF for HIGH
 				0x0ff           delay; length is taken to mean "duration" in microseconds (excl. overhead)
-				0x100..0x101    SPI read/write on channel 0,1 (experimental)
 				0x400..0x401    ws281x LED string (experimental)
-
-			address: the PICO-8 memory location to read from (and subserquently write to in the case of SPI)
+				
+			address: The PICO-8 memory location to read from / write to.
 			length:  Number of bytes to send. 1/8ths are allowed to send partial bit strings.
 
 		For example, to send a byte one bit at a time to a typical APA102 LED string:
@@ -1963,6 +2050,28 @@ Binaries will still export from PICO-8 running under Windows,
 				SERIAL(CLK, 0x4300)
 				SERIAL(0xFF, 5) -- delay 5
 			END
+
+
+		Additional channels are available for bytestreams to and from the host operating system.
+		These are intended to be most useful for UNIX-like environments while developing toolchains,
+		and are not available while running a BBS or exported cart [1]. Maximum transfer rate in all 
+		cases is 64k/sec (blocks cpu).
+
+				0x800           dropped file   //  stat(120) returns TRUE when data is available
+				0x802           dropped image  //  stat(121) returns TRUE when data is available
+				0x804           stdin
+				0x805           stdout
+				0x806           file specifed with: pico8 -i filename
+				0x807           file specifed with: pico8 -o filename
+
+		Image files dropped into PICO-8 show up on channel 0x802 as a bytestream with a special format:
+		The first 4 bytes are the image's width and height (2 bytes each little-endian, like PEEK2),
+		followed by the image in reading order, one byte per pixel, colour-fitted to the display palette
+		at the time the file was dropped.
+		
+		[1]	Channels 0x800 and 0x802 are available from exported binaries, but with a maximum file size
+			of 256k, or 128x128 for images.
+
 
 	:: HTML
 		
@@ -2045,18 +2154,21 @@ Binaries will still export from PICO-8 running under Windows,
 
 	:: Function Arguments
 
-		The list of function arguments (or remain arguments) can be specifed with ... 
+		The list of function arguments can be specifed with ... 
 
 			function preprint(pre, s, ...)
 				local s2 = pre..tostr(s)
 				print(s2, ...) -- pass the remaining arguments on to print()
 			end
 
-		To accept a variable number of arguments:
+		To accept a variable number of arguments, use them to define a table and/or use Lua's
+		select() function. select(index, ...) returns all of the arguments after index.
 
 			function foo(...)
 				local args={...} -- becomes a table of arguments
-				foreach(args,print)
+				foreach(args, print)
+				?select("#",...)    -- alternative way to count the number of arguments
+				foo2(select(3,...)) -- pass arguments from 3 onwards to foo2()
 			end
 
 
@@ -2114,6 +2226,65 @@ Binaries will still export from PICO-8 running under Windows,
 --------------------------------------------------------------------------------------------
 	VERSION HISTORY
 --------------------------------------------------------------------------------------------
+
+
+	v0.2.1
+
+		Added: oval() ovalfill() split()
+		Added: circle drawing tool is now an oval tool (hold shift for circle)
+		Added: hold shift with line tool to snap to 22.5 degree angles from origin (0:1, 1:1, 2:1 gradients)
+		Added: serial() channels for stdin,stdout
+		Added: raw binary and image files dropped in to PICO-8 also become byte streams readable w/ serial()
+		Added: add(tbl, val, index) -- insert val into table at index
+		Added: deli(tbl, index) -- delete element from table by index (index defaults to last element)
+		Added: show progress while exporting binaries (can be slow now that generating zip files)
+		Added: -e to add an extra file to exported binaries zip files // export -e manual.txt foo.bin
+		Added: RESET command to reset the runtime / draw state
+		Added: drag and drop cartridges into PICO-8 window to load them
+		Added: hash stored in .p8.png so that cartridges corrupted by image quantization can show a specific error
+		Added: raw data blocks in compressed code format (useful for storing long binary strings efficiently)
+		Added: clip(x,y,w,h,true): 5th parameter indicates that the clipping region should be clipped by the old one
+		Added: -export switch can be used to convert .p8 files to .p8.png from commandline. // pico8 foo.p8 -export foo.p8.png
+		Added: extcmd("screen",scale) and extcmd("video",scale) to override the default scale (e.g. scale 2 means 256x256)
+		Added: printh(str, filename, overwrite, save_to_desktop) -- 4th parameter to save output file to desktop
+		Changed: add(), del() no longer implemented with Lua snippet; lower cpu cost.
+		Changed: line(),rect() cost the same as rectfill() when drawing equivalent shapes
+		Changed: all drawing operations in sprite editor now observe fill pattern state
+		Changed: numbers can be immediately followed by identifiers (a=1b=2) // lexaloffle.com/bbs/?tid=38038		
+		Changed: Sprite editor shows only active area after shift-selecting sprites
+		Changed: copy/paste in the code editor treats uppercase ascii characters as puny font only when puny mode (ctrl+p) enabled
+		Changed: C0 Controls characters (except for 0x0,0x9,0xa,0xd) encoded in .p8 / clipboard with unicode replacements
+		Changed: stat(4) converts characters to PICO-8 format (P -> puny p,  hiragana unicode -> single character etc.)
+		Changed: serial() returns number of bytes processed (1/8ths included for partial bytes)
+		Changed: IMPORT SPRITESHEET.PNG now uses the current sprite as the destination coordinate instead of 0,0.
+		Changed: Standardized name of the display palette to "display palette" (was sometimes referred to as "screen palette").
+		Changed: tostr() returns nil (used to return "[nil]")
+		Changed: don't need to set bit 0x40 at address 0x5f2c to use secondary palette.
+		Improved: exported binary's data.pod file 90% smaller (~870k -> ~85k)
+		Fixed: pack(...).n is shifted right 16 bits
+		Fixed: ctrl-r doesn't reload external changes for carts which are over compressed code capacity
+		Fixed: false positives when detecting external changes for some older cart versions
+		Fixed: .p8.png carts saved with dense code (compressed size > raw size, including very small carts) stores junk
+		Fixed: error message duplication when loading future version of .p8.png carts
+		Fixed: Illegal colours can enter spritesheet via serach-replace after setting with color()
+		Fixed: Preprocessor: "foo():a().x+=1" "a=b[1]c+=1"
+		Fixed: hex numbers written with punyfont characters breaks syntax high-lighting
+		Fixed: shift+- in sprite editor jumps too vertically when zoomed in
+		Fixed: clicking a note in sfx editor creates a selection (-> backspace clears without moving rows)
+		Fixed: print()/printh()/stop() doesn't respect __tostring metatable method (regression)
+		Fixed: time() and btnp() speed changes after stopping program, typing a command and then resuming.
+		Fixed: phantom drag & drop events sent to unused music channels causing them to occasionally unmute themselves
+		Fixed: undo after moving sprites in map mode only undoes the changes to the map and not the spritesheet.
+		Fixed: inconsistent token counting for negative or bnot'ed numbers https://www.lexaloffle.com/bbs/?tid=38344
+		Fixed: Crash when INSTALL_GAMES / INSTALL_DEMOS without a writeable disk
+		Fixed: stat(4) (clipboard contents) does not convert unicode to corresponding glyphs
+		Fixed: (MacOS) Using discrete GPU ~ drains battery. Now using integrated GPU when available.
+		Fixed: screensaver is blocked while PICO-8 is running (needed to set SDL_HINT_VIDEO_ALLOW_SCREENSAVER: "1")
+		Fixed: screen glitches after running for 25 days
+		Fixed: (HTML Exports) touch controls not registering when running under iOS from an iframe (e.g. on an itch.io page) 
+		Fixed: (HTML Exports) tap and hold brings up the select menu under iOS
+		Fixed: (HTML Exports) button blocked by canvas when overlapping on small screens
+
 
 
 	v0.2.0i
@@ -2222,7 +2393,7 @@ Binaries will still export from PICO-8 running under Windows,
 		Changed: #include directive can be preceeded by whitespace 
 		Changed: Activity logger records nothing after idle for 30 seconds
 		Fixed: Mouse cursor movement in editor is not smooth
-		Fixed: Screen palette doesn't reset after exiting splore
+		Fixed: Display palette doesn't reset after exiting splore
 		Fixed: PALT() returns 0 instead of previous state as bitfield
 		Fixed: Rectangle and line tools broken when used in map editor
 		Fixed: INSTALL_GAMES under Windows produces broken cart files
@@ -2391,7 +2562,7 @@ Binaries will still export from PICO-8 running under Windows,
 		Added: Toggle flags on multiple sprites at once by selecting them first
 		Added: Confirmations when loading/saving with unsaved changes
 		Added: Windowed mode support for Raspberry Pi
-		Added: serial() interface for Raspberry Pi // serial() -- spi, ws281x, direct bit banging
+		Added: serial() interface for Raspberry Pi // serial() -- spi, ws281x, direct bit banging // 0.2.1 update: dropped spi
 		Added: api: peek2 poke2 rawset rawget rawlen rawequal next
 		Added: Comment/uncomment selected block with CTRL-B
 		Added: Can save screenshots and gifs from exported binaries via EXTCMD
@@ -2893,7 +3064,7 @@ Binaries will still export from PICO-8 running under Windows,
 		Fixed: mid() fails when first argument is not smallest
 		Fixed: Scroll wheel changes sprite/map zoom while in code editor
 		Fixed: CTRL-R (quick-run) drawing over current line in command mode
-		Fixed: Label capture (F7) does not respect screen palette state
+		Fixed: Label capture (F7) does not respect display palette state
 		Fixed: Syntax highlighting of api functions and hex numbers
 		Fixed: Looping to 0 with negative step finishes at 1
 		Fixed: nil values printed as false instead of nil
