@@ -1,6 +1,6 @@
 ============================================================================================
 
-	PICO-8 v0.2.1
+	PICO-8 v0.2.1b
 	https://www.pico-8.com
 	(c) Copyright 2014-2020 Lexaloffle Games LLP
 	Author: Joseph White // hey@lexaloffle.com
@@ -1851,6 +1851,7 @@ Binaries will still export from PICO-8 running under Windows,
 
 		Convert val to a string. When val is a number, function or table, use_hex can be used to
 		include the raw hexidecimal value (most useful for inspecting the exactly value of numbers).
+		tostr(nil) returns "[nil]"
 
 		tostr(17)      -- returns "17"
 		tostr(17,true) -- returns "0x0011.0000"
@@ -1886,11 +1887,11 @@ Binaries will still export from PICO-8 running under Windows,
 		Split a string into a table of elements delimited by the given separator (defaults to ",").
 		When convert_numbers is true, numerical tokens are stored as numbers (defaults to true).
 		Empty elements are stored as empty strings.
+		When the separator is "", every character is split into a separate element.
 
 		split("1,2,3")               -- returns {1,2,3}
 		split("one:two:3",":",false) -- returns {"one","two","3"}
 		split("1,,2,")               -- returns {1,"",2,""}
-
 
 --------------------------------------------------------------------------------------------------------
 	Types
@@ -2227,6 +2228,15 @@ Binaries will still export from PICO-8 running under Windows,
 	VERSION HISTORY
 --------------------------------------------------------------------------------------------
 
+	v0.2.1b
+
+		Added: split(str,"") splits by single characters
+		Updated: Tower of Archeos 1.1 via INSTALL GAMES
+		Fixed: print(num,x,y) always prints numbers num in hexidecimal
+		Fixed: .p8.png decoder can enter an infinite loop (caused exports to freeze on boot)
+		Fixed: Can't save screenshot/gif when running a BBS cart with illegal characters in title.
+		Fixed: INSTALL_GAMES is broken
+
 
 	v0.2.1
 
@@ -2269,7 +2279,7 @@ Binaries will still export from PICO-8 running under Windows,
 		Fixed: Illegal colours can enter spritesheet via serach-replace after setting with color()
 		Fixed: Preprocessor: "foo():a().x+=1" "a=b[1]c+=1"
 		Fixed: hex numbers written with punyfont characters breaks syntax high-lighting
-		Fixed: shift+- in sprite editor jumps too vertically when zoomed in
+		Fixed: shift+- in sprite editor jumps too far vertically when zoomed in
 		Fixed: clicking a note in sfx editor creates a selection (-> backspace clears without moving rows)
 		Fixed: print()/printh()/stop() doesn't respect __tostring metatable method (regression)
 		Fixed: time() and btnp() speed changes after stopping program, typing a command and then resuming.
