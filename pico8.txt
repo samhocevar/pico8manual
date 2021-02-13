@@ -1,8 +1,8 @@
 ============================================================================================
-
-	PICO-8 v0.2.1b
+	
+	PICO-8 v0.2.2
 	https://www.pico-8.com
-	(c) Copyright 2014-2020 Lexaloffle Games LLP
+	(c) Copyright 2014-2021 Lexaloffle Games LLP
 	Author: Joseph White // hey@lexaloffle.com
 
 	PICO-8 is built with:
@@ -13,6 +13,8 @@
 		WiringPi http://wiringpi.com/
 		libb64 by Chris Venter
 		miniz by Rich Geldreich
+
+	Latest version of this manual: https://www.lexaloffle.com/pico-8.php?page=manual
 
 ============================================================================================
 
@@ -252,7 +254,8 @@ Welcome to PICO-8!
 		-software_blit n         use software blitting mode off (0) or on (1)
 		-foreground_sleep_ms n   how many milliseconds to sleep between frames.
 		-background_sleep_ms n   how many milliseconds to sleep between frames when running in background
-		-accept_future n         use 1 to allow loading cartridges made with future versions of PICO-8
+		-accept_future n         1 to allow loading cartridges made with future versions of PICO-8
+		-global_api n            1 to leave api functions in global scope (useful for debugging)
 
 
 :: Controller Setup
@@ -323,6 +326,11 @@ Welcome to PICO-8!
 	
 		IMPORT BLAH.PNG     --  expects 128x128 png and colour-fits to the pico-8 palette
 		EXPORT BLAH.PNG     --  use folder() to locate the exported png
+
+		When importing, -x and -y switches can be used to specify the target location in pixels:
+		-s can be used to shrink the image (3 means scale from 384x384 -> 128x128)
+
+		IMPORT BLAH.PNG -X 16 -Y 16
 	
 	:: SFX and Music (.wav)
 	
@@ -423,7 +431,7 @@ Binaries will still export from PICO-8 running under Windows,
 	:: Running EXPORT from the host operating system
 
 		Use the -export switch when launching PICO-8 to run the exporter in headless mode.
-		Output is to the current directory rather than the PICO-8 file system.
+		File paths are relative to the current directory rather than the PICO-8 file system.
 
 		parameters to the EXPORT command are passed along as a single (lowercase) string:
 
@@ -582,7 +590,7 @@ Binaries will still export from PICO-8 running under Windows,
 		1,2 to switch to previous/next colour
 		Tab to toggle fullscreen view
 		Mousewheel or < and > to zoom (centered in fullscreen)
-		
+		CTRL-H to toggle hex view (shows sprite index in hexidecimal)
 	
 	Operations on selected area or selected sprites:
 		f to flip
@@ -618,6 +626,7 @@ Binaries will still export from PICO-8 running under Windows,
 	To pan around the map, use the pan tool or hold space
 	Q,W to switch to previous/next sprite
 	Mousewheel or < and > to zoom (centered in fullscreen)
+	CTRL-H to toggle hex view (shows tile values and sprite index in hexidecimal)
 
 	To move sprites in the spritesheet without breaking references to them in the map:
 		
@@ -648,6 +657,12 @@ Binaries will still export from PICO-8 running under Windows,
 
 		Loop start and end : this is the note index to loop back and to
 			// Looping is turned off when the start index >= end index
+
+		When only the first of the 2 numbers is used (and the second one is 0),
+		it is taken to mean the number of notes to be played. This is normally
+		not needed for sound effects (you can just leave the remaining notes
+		empty), but is useful for controlling music playback.
+
 	
 	There are 2 modes for editing/viewing a SFX: Pitch mode (more suitable
 	for sound effects) and tracker mode (more suitable for music). The mode
@@ -661,7 +676,8 @@ Binaries will still export from PICO-8 running under Windows,
 		
 		Hold shift to apply only the selected instrument
 		Hold CTRL to snap entered notes to the C minor pentatonic scale
-	
+		Right click to grab the instrument of that note
+
 	
 	2. Tracker Mode
 	
@@ -708,6 +724,20 @@ Binaries will still export from PICO-8 running under Windows,
 		If the SFX speed is <= 8, arpeggio speeds are halved to 2, 4
 
 
+	:: Filters
+
+		Each SFX has 5 filter switches that can be accessed while in tracker mode:
+
+		NOIZ:      Generate pure white noise (applies only to instrument 6)
+		BUZZ:      Various alterations to the waveform to make it sound more buzzy
+		DETUNE-1:  Detunes a second voice to create a flange-like effect
+		DETUNE-2:  Various second voice tunings, mostly up or down an octave
+		REVERB:    Apply an echo with a delay of 2 or 4 ticks
+		DAMPEN:    Low pass filter at 2 different levels
+
+		When BUZZ is used with instrument 6, and NOIZ is off, pure brown noise is generated.
+
+
 :: Music Editor
 
 	Music in PICO-8 is controlled by a sequence of 'patterns'. Each pattern is a list of
@@ -728,7 +758,12 @@ Binaries will still export from PICO-8 running under Windows,
 	
 		When a pattern has SFXes with different speeds, the pattern finishes playing when
 		the left-most non-looping channel has finished playing. This can be used to set up
-		time signatures that don't divide into 32, or double-time drum beats etc.
+		double-time drum beats or unusual polyrhythms.
+
+		For time signatures like 3/4 where less than 32 rows should be played before jumping
+		to the next pattern, the length of a SFX can be set by adjusting only the first loop
+		position and leaving the second one as zero. This will show up in the sfx editor as
+		"LEN" (for "Length") instead of "LOOP".
 	
 	
 	:: Copying music between or within cartridges
@@ -752,6 +787,7 @@ Binaries will still export from PICO-8 running under Windows,
 			Pitch is added relative to C2
 			Volume is multiplied
 			Effects are applied on top of the SFX instrument's effects
+			Any filters that are on in the SFX instrument are enabled for that note
 
 		For example, a simple tremolo effect could be implemented by defining an instrument 
 		in SFX 0 that rapidly alternates between volume 5 and 2. When using this instrument
@@ -764,6 +800,7 @@ Binaries will still export from PICO-8 running under Windows,
 		For example: a bell that gradually fades out. To invert this behaviour, effect 3
 		(normally 'drop') can be used when triggering the note. All other effect values	have 
 		their usual meaning when triggering SFX instruments.	
+
 
 	
 ============================================================================================
@@ -908,6 +945,7 @@ Binaries will still export from PICO-8 running under Windows,
 		
 		A += 2   -- equivalent to: A = A + 2
 
+		// note that the LHS appears twice, so for TBL[FN()]+=1, FN() will be called twice.
 	
 		3. != operator
 	
@@ -990,7 +1028,10 @@ Binaries will still export from PICO-8 running under Windows,
 
 	reset
 
-		Reset the draw state, including palette, camera position, clipping and fill pattern.
+		Reset the values in RAM from 0x5f00..0x5f7f to their default values. 
+		This includes the palette, camera position, clipping and fill pattern. 
+		If you get lost at the command prompt because the draw state makes viewing text 
+		impossible, try typing RESET! It can also be called from a running program.
 
 
 	info
@@ -1072,10 +1113,33 @@ Binaries will still export from PICO-8 running under Windows,
 			"label"       set cart label
 			"screen"      save a screenshot
 			"rec"         set video start point
+			"rec_frames"  set video start point in frames mode (see below)
 			"video"       save a .gif to desktop
 			"audio_rec"   start recording audio
 			"audio_end"   save recorded audio to desktop
 			"shutdown"    quit cartridge (from exported binary)
+			"folder"      open current working folder on the host operating system
+
+
+		:: Recording GIFs
+
+			extcmd("rec"), extcmd("video") is the same as using ctrl-8, ctrl-9 and saves a gif
+			to the desktop using the current GIF_SCALE setting (use CONFIG GIF_SCALE to change).
+
+			Two additional parameters can be used to override these defaults:
+
+			EXTCMD("VIDEO", 4)    -- SCALE *4 (512 X 512)
+			EXTCMD("VIDEO", 0, 1) -- DEFAULT SCALING, SAVE TO USER DATA FOLDER
+
+			The user data folder can be opened with EXTCMD("FOLDER") and defaults to the same
+			path as the cartridge, or {pico-8 appdata}/appdata/appname for exported binaries.
+
+			Due to the nature of the gif format, all gifs are recorded at 33.3fps, and frames
+			produced by PICO-8 are skipped or duplicated in the gif to match roughly what the
+			user is seeing. To record exactly one frame each time flip() is called, regardless
+			of the runtime framerate or how long it took to generate the frame, use:
+
+				EXTCMD("REC_FRAMES")
 
 
 --------------------------------------------------------------------------------------------
@@ -1208,9 +1272,16 @@ Binaries will still export from PICO-8 running under Windows,
 	print str [col]
 
 		Print a string and optionally set the colour to col.
+
+		Shortcut: written on a single line, ? can be used to call print without brackets: 
+
+			?"hi"
 		
-		If x and y are not supplied, the text will automatically wrap and cause
-		carriage returns / vertical scrolling similar to the command prompt.
+		If x and y are not supplied, newline will automatically be appended. This can be
+		ommited by ending the string in an explicit termination command:
+
+			?"the quick brown fox\0"
+
 
 	cursor x y [col]
 
@@ -1282,6 +1353,12 @@ Binaries will still export from PICO-8 running under Windows,
 			a frame. For example, if you boot PICO-8 and then type PAL(6,14,1), you can see all
 			of the gray (colour 6) text immediate change to pink (colour 14) even though it
 			has already been drawn. This is useful for screen-wide effects such as fading in/out.
+
+		2: Secondary Palette
+
+			Used by fillp() for drawing sprites. This provides a mapping from a single 4-bit colour
+			index to two 4-bit colour indexes. See fillp() for more information.
+
 
 		PAL() resets to system defaults (including transparency values and fill pattern)
 
@@ -1355,15 +1432,55 @@ Binaries will still export from PICO-8 running under Windows,
 		
 		This can be more neatly expressed in binary: FILLP(0b0011001111001100)
 		The default fill pattern is 0, which means a single solid colour is drawn.
-		
+
 		To specify a second colour for the pattern, use the high bits of any colour parameter:
 		
 			FILLP(0b0011010101101000)
 			CIRCFILL(64,64,20, 0x4E) -- brown and pink
-		
-		An additional bit 0b0.1 can be set to indicate that the second colour is not drawn.
-		
-			FILLP(0b0011001111001100.1) -- checkboard with transparent squares
+
+
+		Additional settings are given in bits 0b0.111:
+
+			0b0.100 Transparency
+
+				When this bit is set, the second colour is not drawn
+				FILLP(0b0011001111001100.1) -- checkboard with transparent squares
+
+			0b0.010 Apply to Sprites
+			
+				When set, the fill pattern is applied to sprites (spr, sspr, map, tline), using a
+				colour mapping provided by the secondary palette.
+
+				Each pixel value in the sprite (after applying the draw palette as usual) is taken
+				to be an index into the secondary palette. Each entry in the secondary palette
+				contains the two colours used to render the fill pattern. For example, to draw
+				a white and red (7 and 8) checkerboard pattern for only blue pixels (colour 12) in
+				a sprite:
+
+				FOR I=0,15 DO PAL(I, I+I*16, 2) END  --  all other colours map to themselves
+				PAL(12, 0x87, 2)                     --  remap colour 12 in the secondary palette
+
+				FILLP(0b0011001111001100.01)         --  checkerboard palette, applied to sprites
+				SPR(1, 64,64)                        --  draw the sprite
+
+
+			0b0.001 Apply Secondary Palette Globally
+
+				When set, the secondary palette mapping is also applied by all draw functions that
+				respect fill patterns (circfill, line etc). This can be usedful when used in 
+				conjunction with sprite drawing functions, so that the colour index of each sprite 
+				pixel means the same thing as the colour index supplied to the drawing functions.
+
+				FILLP(0b0011001111001100.001)
+				PAL(12, 0x87, 2)
+				CIRCFILL(64,64,20,12)                -- red and white checkerboard circle
+
+				The secondary palette mapping is applied after the regular draw palette mapping.
+				So the following would also draw a red and white checkered circle:
+
+				PAL(3,12)
+				CIRCFILL(64,64,20,3)
+
 		
 		The fill pattern can also be set by setting bits in any colour parameter:
 
@@ -1371,9 +1488,13 @@ Binaries will still export from PICO-8 running under Windows,
 			CIRCFILL(64,64,20, 0x114E.ABCD) -- sets fill pattern to ABCD
 
 			-- bit  0x1000.0000 means the non-colour bits should be observed
-			-- bit  0x0100.0000 transparency bit
+			-- bit  0x0700.0000 0x1 transparency, 0x2 apply to sprites, 0x4 apply secondary palette 
 			-- bits 0x00FF.0000 are the usual colour bits
 			-- bits 0x0000.FFFF are interpreted as the fill pattern
+
+		The fill pattern can be applied to sprites (spr, sspr, map, tline) using bit 0b0.01
+
+			FILLP(0b0011001111001100.011)
 
 
 --------------------------------------------------------------------------------------------
@@ -1385,7 +1506,7 @@ Binaries will still export from PICO-8 running under Windows,
 
 		Add value v to the end of table t.
 		Equivalent to t[#t+1] = v
-		If index is given then the element is inserted at that position
+		If index is given then the element is inserted at that position.
 
 			FOO={}        -- create empty table
 			ADD(FOO, 11)
@@ -1393,13 +1514,12 @@ Binaries will still export from PICO-8 running under Windows,
 			PRINT(FOO[2]) -- 22
 
 
-	del  t [v]
+	del  t v
 	
 		Delete the first instance of value v in table t
 		The remaining entries are shifted left one index to avoid holes.
 		Note that v is the value of the item to be deleted, not the index into the table.
-		To remove an item at a particular index, use deli.
-		When v is not given, the last element in the table is removed.
+		(To remove an item at a particular index, use deli instead)
 		del returns the deleted item, or returns no value when nothing was deleted.
 
 			A={1,10,2,11,3,12}
@@ -1412,6 +1532,7 @@ Binaries will still export from PICO-8 running under Windows,
 	deli t [i]
 
 		Like del(), but remove the item from table t at index i.
+		When i is not given, the last element of the table is removed and returned.
 
 
 	count t [v]
@@ -1558,11 +1679,10 @@ Binaries will still export from PICO-8 running under Windows,
 		MAP(0, 0, 0, 0, 128,64)
 
 		Layers is an 8-bit bitfield. When it is specified, only sprites with matching flags are drawn.
-		For example, when layers is 0x5, only sprites with flag 0 and 2 are drawn. 
+		For example, when layers is 0x5, only sprites with flag 0 and 2 are drawn.
 
-		Sprite 0 is always taken to mean empty, and is never drawn.
+		Sprite 0 is taken to mean "empty" and not drawn. To disable this behaviour, use: POKE(0x5F36, 0x8)
 
-	
 	
 	tline x0 y0 x1 y1 mx my [mdx mdy] [layers]
 
@@ -1596,6 +1716,8 @@ Binaries will still export from PICO-8 running under Windows,
 			POKE(0x5F3A, OFFSET_X)
 			POKE(0x5F3B, OFFSET_Y)
 
+		Sprite 0 is taken to mean "empty" and not drawn. To disable this behaviour, use: POKE(0x5F36, 0x8)
+
 
 --------------------------------------------------------------------------------------------------------
 	Memory
@@ -1627,6 +1749,7 @@ Binaries will still export from PICO-8 running under Windows,
 		0x3100 song
 		0x3200 sfx
 		0x4300 user data
+		0x5600 custom font (if one is defined)
 		0x5e00 persistent cart data (256 bytes)
 		0x5f00 draw state
 		0x5f40 hardware state
@@ -1639,14 +1762,22 @@ Binaries will still export from PICO-8 running under Windows,
 		Map format is one byte per cel, where each byte normally encodes a sprite index.
 
 
-	peek addr
-	poke addr val
+	peek addr [n]
 
-		Read and write one byte to an address in base ram.
-		Legal addresses are 0x0..0x7fff
-		Reading out of range returns 0
-		Writing out of range causes a runtime error
-	
+		Read a byte from an address in base ram.
+		Reading out of range (< 0) returns 0
+		If n is specified, peek() returns that number of results (max: 8192)
+		For example, to read the first 2 bytes of video memory:
+
+			A, B = PEEK(0x6000, 2)
+
+
+	poke addr val1, val2 ..
+
+		Write one or more bytes to an address in base ram.
+		If more than one parameter is provided, they are written sequentially (max: 8192)
+		Writing to an address out of range (0x0..0x7fff) causes a runtime error.
+
 
 	peek2 addr
 	poke2 addr val
@@ -1824,9 +1955,14 @@ Binaries will still export from PICO-8 running under Windows,
 		example:
 		menuitem(1, "restart puzzle", function() reset_puzzle() sfx(10) end)
 	
+		If the callback returns true, the pause menu remains open.
+		The callback takes a single parameter that is a bitfield 
+
+		menuitem(1, "foo", function(b) if (b&1 > 0) then printh("left was pressed") end end)
+	
 
 --------------------------------------------------------------------------------------------------------
-	Strings
+	Strings and Type Conversion
 --------------------------------------------------------------------------------------------------------
 
 	Strings in Lua are written either in single or double quotes or with matching [[ ]] brackets:
@@ -1850,23 +1986,28 @@ Binaries will still export from PICO-8 running under Windows,
 	tostr val [use_hex]
 
 		Convert val to a string. When val is a number, function or table, use_hex can be used to
-		include the raw hexidecimal value (most useful for inspecting the exactly value of numbers).
+		include the raw hexidecimal value (useful for inspecting the exact value of numbers).
 		tostr(nil) returns "[nil]"
+		tostr() returns ""
 
-		tostr(17)      -- returns "17"
-		tostr(17,true) -- returns "0x0011.0000"
+		tostr(17)      -- "17"
+		tostr(17,true) -- "0x0011.0000"
 
-	tonum str
+	tonum val
+	
+		Converts val to a number
 
-		Convert a string to a number.
-
-		tonum("17")    -- returns 17
-
+		tonum("17")  -- 17
+		tonum(17)    -- 17
+		tonum("abc") -- no return value
+		
+	
 	chr num
 	ord str [index]
 
 		Convert a character to its character code, or vice versa.
 		Use the index paramer to specify which character in a string to use.
+		When index is out of range or str is not a string, ord returns nil
 
 		chr(64)        -- returns "@"
 		ord("@")       -- returns 64
@@ -1885,42 +2026,21 @@ Binaries will still export from PICO-8 running under Windows,
 	split str [separator] [convert_numbers] 
 
 		Split a string into a table of elements delimited by the given separator (defaults to ",").
+		When separator is a number n, the string is split into n-character groups.
 		When convert_numbers is true, numerical tokens are stored as numbers (defaults to true).
 		Empty elements are stored as empty strings.
-		When the separator is "", every character is split into a separate element.
 
 		split("1,2,3")               -- returns {1,2,3}
 		split("one:two:3",":",false) -- returns {"one","two","3"}
 		split("1,,2,")               -- returns {1,"",2,""}
 
---------------------------------------------------------------------------------------------------------
-	Types
---------------------------------------------------------------------------------------------------------
 
 	type val
 	
-		returns the name of the type of value x as a string
+		returns the type of val as a string (for example, "number")
 	
-	tostr val [hex]
-
-		returns val as a string
 		
-		If hex is true and val is a number, an unsigned hexadecimal writing of 
-		the number is returned in the format "0x0000.0000". You can use this to
-		inspect the internal representation of PICO-8 numbers.
-
-		If val is a boolean, it is written as "true" or "false"
-		
-		All other val types are written as "[typename]" (use hex to include a hex
-			identity in the string if available)
-		
-	tonum val
 	
-		converts val to a number
-		if val is a string, the number is taken to be decimal unless prefixed with "0x"
-		if the conversion fails, tonum returns no value.
-
-
 --------------------------------------------------------------------------------------------
 	Cartridge Data
 --------------------------------------------------------------------------------------------
@@ -2086,11 +2206,15 @@ Binaries will still export from PICO-8 running under Windows,
 	Mouse and Keyboard Input
 --------------------------------------------------------------------------------------------
 
-	// (experimental! The html implementation is still limited & buggy)
+	// EXPERIMENTAL -- but mostly working on all platforms
 
 	Mouse and keyboard input can be achieved by enabling devkit input mode:
 	
-	POKE(0x5F2D, 1)
+	POKE(0x5F2D, flags)  -- where flags are:
+
+		0x1 Enable
+		0x2 Mouse buttons trigger btn(4)..btn(6)
+		0x4 Pointer lock (use stat 38..39 to read movements)
 	
 	Note that not every PICO-8 will have a keyboard or mouse attached to it, so when posting
 	carts to the Lexaloffle BBS, it is encouraged to make keyboard and/or mouse control 
@@ -2106,6 +2230,8 @@ Binaries will still export from PICO-8 running under Windows,
 		STAT(33) -- Mouse Y
 		STAT(34) -- Mouse buttons (bitfield)
 		STAT(36) -- Mouse wheel event
+		STAT(38) -- Relative x movement (in host desktop pixels) -- requires flag 0x4
+		STAT(39) -- Relative y movement (in host desktop pixels) -- requires flag 0x4
 
 
 --------------------------------------------------------------------------------------------
@@ -2115,6 +2241,7 @@ Binaries will still export from PICO-8 running under Windows,
 	PICO-8 also exposes 2 features of Lua for advanced users: Metatables and Coroutines.
 	
 	For more information, please refer to the Lua 5.2 manual.
+
 	
 	:: Metatables
 	
@@ -2224,9 +2351,252 @@ Binaries will still export from PICO-8 running under Windows,
 			Suspend execution and return to the caller.
 
 
+
+--------------------------------------------------------------------------------------------
+	Appendix A: P8SCII Control Codes
+--------------------------------------------------------------------------------------------
+
+	When printed with PRINT(), some characters have a special meaning that can be used to alter
+	things like the cursor position and text rendering style. Control characters in PICO-8 are
+	CHR(0)..CHR(15) and can be written as an escaped sequence ("\n" for newline etc.)
+
+	Some of the control codes below take parameters which are written using a scheme that is
+	a superset of hexidecimal format. That is, '0'..'f' also mean 0..15. But characters after
+	'f' are also accepted: 'g' means 16 and so on. Such parameters are written below as P0, P1.
+
+	For example, to print with a blue background ("\#c") and dark gray foreground ("\f5"):
+
+		print("\#c\f5 blue ")
+
+	The only side-effects on the draw state are changes in cursor position and foreground color;
+	all other attributes are reset each time print() is called.
+
+
+	:: Control Codes
+
+		0 "\0"   terminate printing
+		1 "\*"   repeat next character P0 times. ?"\*3a" --> aaa
+		2 "\#"   draw solid background with colour P0 
+		3 "\-"   shift cursor horizontally by P0-16 pixels
+		4 "\|"   shift cursor vertically by P0-16 pixels
+		5 "\+"   shift cursor by P0-16, P1-16 pixels
+		6 "\^"   special command (see below)
+		7 "\a"   audio (see below)
+		8 "\b"   backspace
+		9 "\t"   tab
+		a "\n"   newline
+		b "\v"   decorate previous character (see below)
+		c "\f"   set foreground colour
+		d "\r"   carriage return
+		e "\014" switch to font defined at 0x5600
+		f "\015" switch to default font
+
+
+	:: Special Commands
+
+		These commands all start with "\^" and take between none and 2 parameters (P0, P1)
+		For example, to clear screen to dark blue: print("\^c1")
+
+			1..9 skip 1,2,4,8,16,32..256 frames		
+			c cls to colour P0, set cursor to 0,0
+			g set cursor position to home
+			h set home to cursor position
+			j jump to absolute P0*4, P1*4 (in screen pixels)
+			s set tab stop width to P0 pixels (used by "\t")
+			x set character width  (default: 4)
+			y set character height (default: 6)
+
+	
+		:: rendering mode options  
+
+			// prefix these with "-" to disable: e.g. ?"\^i on \^-i off "
+
+			w wide mode: scales by 2x1 
+			t tall mode: scales by 1x2
+			. dotty mode: when wide or tall, draw only even pixels
+			p pinball mode: equivalent to setting wide, tall and dotty
+			i invert
+			b border: toggle 1px padding on left and top // on by default
+			# solid background  // off by default, but enabled automatically by \#
+
+
+	:: Audio 
+
+		?"\a"   -- single beep
+		?"\a12" -- play existing data at sfx 12 (the index is written in decimal)
+
+		If an sfx index is not specified, a non-active sfx between 60..63 is selected automatically.
+		To fill the SFX with data before playback, the following commands can then be appended.
+		
+		1. (optional) SFX attributes must appear once at the start as they apply to the whole sound:
+
+			s P0     set the sfx speed
+			l P0 P1  set the sfx loop start and end points
+
+		2. Note data:
+
+			Note are written as a..g, optionally followed by a sharp # or flat -, and octave number.
+
+				print "\ace-g" -- minor triad
+
+			Note attributes apply to allow following notes. Adjust with:
+
+			i P0    set the instrument (default: 5)
+			v P0    set the volume     (default: 5)
+			x P0    set the effect     (default: 0)
+			<  >   increase or decrease volume by 1 
+
+			For example, to play a fast (speed 4), staccato (effect 5) arpeggio starting at C1:
+
+				print "\as4x5c1egc2egc3egc4"
+	  
+
+	:: Decoration Characters
+
+		The control character \v can be used to decorate the last printed character with another
+		character at a given offset, without needing to otherwise manage the cursor position.
+		After the decorating character is printed, the previous cursor position is restored.
+
+		The format is \v P0 char, where P0 is a number giving the desired offset, and char
+		is any character to print at that offset (relative to the previous printed character).
+
+		The offset has x packed into the lowest 2 bits, and starts (-2,-8) in reading order.
+		So 3 means (+1, -8), 4 means (-2, -7) and so on.
+
+		For example, to write "café!", using a comma to draw the accute accent:
+
+			print"\ncafe\vb,!"
+
+		In this case P0 is 'b', which is read as the number 11. So the comma is drawn at:
+			x = (11%4)-2 = 1
+			y = (11\4)-8 = -6
+
+
+	:: Custom Font
+
+		A custom font can be defined at 0x5600, consisting of 8 bytes per character * 256 characters
+		= 2048 bytes. Each character is an 8x8 bitfield (1 bit/pixel), where starting from the top,
+		each row is a single byte starting with 0x1 on the left.
+
+		The first five bytes (character 0 is never drawn) describes attributes of the font:
+
+			0x5f60 character width in pixels (can be more than 8, but only 8 pixels are drawn)
+			0x5f61 character width for character 128 and above
+			0x5f62 character height in pixels
+			0x5f63 draw offset x
+			0x5f64 draw offset y
+
+
+	:: Default Attributes
+
+		Although attributes are reset every time print() is called, it is possible to set their default
+		values by writing to memory addresses 0x5f58..0x5f5b.
+
+		0x5f58 // bitfield
+			0x1  when set to 0x1, bits 1..7 are observed:
+			0x2  padding
+			0x4  wide
+			0x8  tall
+			0x10 solid background
+			0x20 invert
+			0x40 dotty
+			0x80 use custom font
+
+			// e.g. poke(0x5f58, 0x1 | 0x2 | 0x4 | 0x8 | 0x20 | 0x40)  -- pinball everywhere
+
+		0x5f59 char_w   (low nibble), char_h   (high)
+		0x5f5a char_w2  (low nibble), tab_w    (high)
+		0x5f5b offset_x (low nibble), offset_y (high)
+
+		// any nibbles equal to 0 are ignored
+		// tab_w values are mapeed to 4..64
+
 --------------------------------------------------------------------------------------------
 	VERSION HISTORY
 --------------------------------------------------------------------------------------------
+
+
+	v0.2.2
+
+		Added: SFX filters: noiz (white noise for inst 6), buzz, detune (flange/overtone), reverb, dampen (lpf)
+		Added: SFX length (leave the second loop value at 0 to use). Can be >= 32.
+		Added: P8SCII control characters when using print() -- can adjust colour and cursor position etc.
+		Added: User-defined font at 0x5600, accessible via control character \014
+		Added: poke(addr, val0, val1, val2 .. valn) -- same for poke2, poke4
+		Added: can peek multiple values:  a,b,c = peek(addr, 3)  -- same for peek2, peek4
+		Added: Locked mouse pointer // poke(0x5f2d, 0x5) and then stat(38),stat(39) to read
+		Added: right click in sfx pitch mode to grab the instrument of that note
+		Added: IMPORT command can specify target location in pixels: IMPORT FOO.PNG -X 16 -Y 32 
+		Added: IMPORT -S to shrink the imported image (e.g. -S 3 means shrink from 384x384 -> 128x128) 
+		Added: ctrl-c at empty command prompt to copy the most recent error message
+		Added: extcmd("screen",0,1) / extcmd("video",0,1) saves files in same path as cart / exported executable or app.
+		Added: set bit POKE(0x5F36, 0x8) to treat sprite 0 as opaque when drawn by map(), tline()
+		Added: shift-tab in gfx/map editor for full-fullscreen mode (with no red menu bars)
+		Added: extcmd("rec_frames") to record each gif frame only when flip() is called regardless of rendering speed
+		Added: extcmd("folder") to open the folder on the host operating system (where printf, extcmd saves files to)
+		Added: custom menu callbacks can optionally leave the pause menu open, and can read LEFT and RIGHT button presses
+		Added: ctrl-h hex mode in map / gfx views (displays current sprite in hex, and shows map tile values)
+		Added: export map as a single image with export foo.map.png
+		Added: @weeble's gamepad improvements to the default html shell (dpad layout detection, better mapping / hotplugging)
+		Added: stack trace on bad memory access e.g. poke(-1,0)
+		Improved: General optimisation pass; heavy carts use 20~30% less host cpu
+		Changed: Most api functions are local by default for performance. use "pico8 -global_api 1" if needed for debugging.
+		Changed: unpack() now has a non-zero cost but still fairly fast
+		Changed: .. operator has a small cost based on number of characters concatenated
+		Changed: LOADK vm instruction costs 1 cycles (was 2) // otherwise "c=0" costs more than "c=a+b"!
+		Changed: removed function cpu refunds; speed-critical calls to bitwise function should use operator counterparts instead.
+		Changed: Incremental garbage collection each frame for improved performance.
+		Changed: stat(0) performs garbage collection in order to obtain a meaningful result; use stat(99) for raw value
+		Changed: options menu always available from pause menu (used to only be available in web exports)
+		Changed: tostr() returns "" instead of nil
+		Changed: exporting gif/png from web version now creates a pop-up div that can be dismissed
+		Changed: print() from commandline automatically wraps long strings
+		Changed: glyph constants set only when running cartridge, not when running a command from prompt
+		Changed: Using printh from exported carts outputs files in the same folder as the .exe / .app
+		Changed: Various kana font adjustments
+		Changed: type() returns nothing instead of causing a runtime error
+		Changed: fill pattern is cleared when program is suspended by default. Use poke(0x5f2e,0x20) to preserve.
+		Changed: reset() resets everything from 0x5f00..0x5f7f, same as when program is initialised (including new random seed)
+		Changed: font tweaks for hiragana, katagana, ampersand characters 
+		Changed: (raspi) separate binaries that support gpio to remove wiringPi dependency and gpio poking-related crashes
+		Fixed: Diagonal lines in editor contain an incorrect step when snapping to -1:1, 1:-1
+		Fixed: rnd(tbl) is not random enough when table has 2 elements   /bbs/?pid=81092#p
+		Fixed: add(tbl) causes runtime error. should have no effect and return nothing
+		Fixed: cursor position in code editor incorrect when changing lines contaning glyphs/tabs
+		Fixed: CONFIG TAB_WIDTH does not take effect until restarting PICO-8
+		Fixed: Selecting sprites from bottom right -> top left and then pasting only pastes a single sprite
+		Fixed: Moving map selection around with cursor keys beyond original selection leaves streaks
+		Fixed: stdout/stdin serial() streams should be binary, not text mode (causes \r chars under Windows)
+		Fixed: printh("hello.txt",fn,true,true) fails to save to desktop when fn has an extention
+		Fixed: IMPORT FOO.PNG using the current sprite location as target instead of 0,0
+		Fixed: tonum behaving differently to parser for string numbers out of range.  e.g. tonum("-0x9000") should be 0x7000
+		Fixed: Exporting the same zip file multiple times creates duplicate file entries
+		Fixed: tline / line clipping // sometimes off by 1px, sometimes incorrectly discarded altogether
+		Fixed: poking values with bit 0x80 to 0x5f28,0x5f30,0x5f3c,0x5f3e clobbers following address
+		Fixed: deli(tbl,nil) behaves the same as deli(tbl) -- should have no effect
+		Fixed: stat(13),stat(15) reporting y coordinates of menu with 0 items
+		Fixed: memory leak when saving gifs (causes web export to crash after a few records)
+		Fixed: print() linefeeds clobber multi-line text printed at bottom of screen
+		Fixed: preprocessor can not handle form: "::_::a+=1" (regression in 0.2.1)
+		Fixed: When split() by group size (e.g. split("ab12",2,false)), last parameter ignored
+		Fixed: partial cstore (len < 0x4300) from splore/export clobbering data outside that range on subsequent reload
+		Fixed: joystick stops responding after unplug and plug back in twice (also happens when some devices sleep / wake up)
+		Fixed: mkdir(nil) crashes
+		Fixed: possible to edit an SFX without the cursor visible (confusing)
+		Fixed: menuitem() callbacks broken when there is no _draw() or _update() defined
+		Fixed: should only be able to call from commandline: cd mkdir install_games keyconfig info
+		Fixed: controller menu (pause->options->controls) does not show custom key settings
+		Fixed: -export failing to find files relative from current path
+		Fixed: -export failing to locate html template path
+		Fixed: binary export storing multicart cart names with path (should be named "dat1.p8", not "dat/dat1.p8")
+		Fixed: pause menu broken when cartridge is launched from splore and run() is called inside first frame 
+		Fixed: text printing does not respect draw palette (was broken in 0.2) // ref: /bbs/?tid=41428
+		Fixed: for backwards compatibility, non-numbery colour parameters should be taken to mean zero
+		Fixed: preprocessor: self assignment with quoted function calls on RHS a+=1+cos"0"
+		Fixed: ctrl-r during pause menu only takes effect after closing menu
+		Fixed: (bug in RC1) pack(...).n is zero
+		Fixed: (bug in RC1) using filters noiz:1, dampen:2, lpf is not applied to melodic instruments (but should be)
+
 
 	v0.2.1b
 
@@ -2236,6 +2606,7 @@ Binaries will still export from PICO-8 running under Windows,
 		Fixed: .p8.png decoder can enter an infinite loop (caused exports to freeze on boot)
 		Fixed: Can't save screenshot/gif when running a BBS cart with illegal characters in title.
 		Fixed: INSTALL_GAMES is broken
+		Fixed: Mouse is broken in HTML exports
 
 
 	v0.2.1
