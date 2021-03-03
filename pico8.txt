@@ -1,6 +1,6 @@
 ============================================================================================
 	
-	PICO-8 v0.2.2
+	PICO-8 v0.2.2b
 	https://www.pico-8.com
 	(c) Copyright 2014-2021 Lexaloffle Games LLP
 	Author: Joseph White // hey@lexaloffle.com
@@ -1029,7 +1029,7 @@ Binaries will still export from PICO-8 running under Windows,
 	reset
 
 		Reset the values in RAM from 0x5f00..0x5f7f to their default values. 
-		This includes the palette, camera position, clipping and fill pattern. 
+		This includes the palette, camera position, clipping and fill pattern.
 		If you get lost at the command prompt because the draw state makes viewing text 
 		impossible, try typing RESET! It can also be called from a running program.
 
@@ -1103,22 +1103,24 @@ Binaries will still export from PICO-8 running under Windows,
 		110		Returns true when in frame-by-frame mode
 
 
-	extcmd x
+	extcmd cmd
 	
-		Special system command, where x is a string:
+		Special system command, where cmd is a string:
 		
-			"pause"       request the pause menu be opened
-			"reset"       request a cart reset
-			"go_back"     follow the current breadcrumb (if there is one)
-			"label"       set cart label
-			"screen"      save a screenshot
-			"rec"         set video start point
-			"rec_frames"  set video start point in frames mode (see below)
-			"video"       save a .gif to desktop
-			"audio_rec"   start recording audio
-			"audio_end"   save recorded audio to desktop
-			"shutdown"    quit cartridge (from exported binary)
-			"folder"      open current working folder on the host operating system
+			"pause"         request the pause menu be opened
+			"reset"         request a cart reset
+			"go_back"       follow the current breadcrumb (if there is one)
+			"label"         set cart label
+			"screen"        save a screenshot
+			"rec"           set video start point
+			"rec_frames"    set video start point in frames mode (see below)
+			"video"         save a .gif to desktop
+			"audio_rec"     start recording audio
+			"audio_end"     save recorded audio to desktop
+			"shutdown"      quit cartridge (from exported binary)
+			"folder"        open current working folder on the host operating system
+			"set_filename"  set the filename for screenshots / gifs
+			"set_title"     set the host window title
 
 
 		:: Recording GIFs
@@ -1140,6 +1142,13 @@ Binaries will still export from PICO-8 running under Windows,
 			of the runtime framerate or how long it took to generate the frame, use:
 
 				EXTCMD("REC_FRAMES")
+
+			The default filename for gifs (and screenshots) is foo_%d, where foo is the name
+			of the cartridge, and %d is a number starting at 0 and automatically incremented
+			until a file of that name does not exist. Use extcmd("set_filename","foo") to
+			override that default. If the custom filename includes "%d", then the auto-
+			incrementing number behaviour is used, but otherwise files are written even if 
+			there is an existing file with the same name.
 
 
 --------------------------------------------------------------------------------------------
@@ -1281,6 +1290,13 @@ Binaries will still export from PICO-8 running under Windows,
 		ommited by ending the string in an explicit termination command:
 
 			?"the quick brown fox\0"
+
+		print returns the right-most x position that occured while printing. This can be
+		used to find out the width of some text by printing it off-screen:
+
+			W = PRINT("HOGE",0,-20) -- is set to 16
+
+		See Appendix A (P8SCII) for information about control codes and custom fonts.
 
 
 	cursor x y [col]
@@ -1956,7 +1972,7 @@ Binaries will still export from PICO-8 running under Windows,
 		menuitem(1, "restart puzzle", function() reset_puzzle() sfx(10) end)
 	
 		If the callback returns true, the pause menu remains open.
-		The callback takes a single parameter that is a bitfield 
+		The callback takes a single parameter that is a bitfield of L,R,X button presses
 
 		menuitem(1, "foo", function(b) if (b&1 > 0) then printh("left was pressed") end end)
 	
@@ -2515,6 +2531,35 @@ Binaries will still export from PICO-8 running under Windows,
 	VERSION HISTORY
 --------------------------------------------------------------------------------------------
 
+	v0.2.2b
+
+		Added: export foo.lua.png to get an image of the cartridge's source code
+		Added: Pause menu can be forced to appear by holding down pause for 300ms (even if program blocks it)
+		Added: extcmd("set_filename","foo") -- set the filename of the next screenshot or gif (can include %d)
+		Added: extcmd("set_title","foo") -- set window title (useful for exported binaries)
+		Added: Can toggle punyfont mode at command prompt w/ ctrl+p (useful for inspecting puny variable names!)
+		Changed: Default filename is /untitled.p8 instead of no filename (auto-increments to untitled_1.p8 etc.)
+		Changed: circ/oval that are not visible cost almost nothing, including circles that contain clipping region
+		Changed: filled circles/ovals that contain clipping region cost the same as the equivalent rectfill
+		Changed: shift+enter in code editor only auto-completes block for DO, THEN, REPEAT or FUNCTION 
+		Fixed: ?"\ac0" starts from d#0 instead of c0
+		Fixed: preprocessor regression when using string at end of ..= statement: if (true) then a..="b" end
+		Fixed: pressing L / R in paused menu is registered by running program after closing menu
+		Fixed: printing text in tall mode (?"\^ttall") via commandline can chop off bottom line before scrolling
+		Fixed: drag-select text with cursor at bottom or top of screen scrolls too fast
+		Fixed: spurious stat(0) results when using yield() to exit frame instead of flip()
+		Fixed: line()/tline() sometimes draws pixels on opposite side of screen (0.2.2 regression)
+		Fixed: line()/tline() fails to draw lines that have x or y coordinates > 32767 pixels apart 
+		Fixed: can peek() more than 8192 values in single call
+		Fixed: large fill circles (> radius 900) render incorrectly close to vertical center (32-bit builds, web)
+		Fixed: even-widthed filled ovals with midpoint < 0 is drawn off by 1
+		Fixed: black pixels in gif / map export not completely black
+		Fixed: map and spritesheet exporters do not respect current display palette and 0x5F36:0x8 (draw spr 0)
+		Fixed: code editor: cursor position off by one when selecting character after glyph (0.2.2 regression)
+		Fixed: code editor: tab names don't show up when 100% punyfont
+		Fixed: import spritesheet.png failing under MacOS (0.2.2 regression)
+		Fixed: export single sfx to .wav crashes when contains sfx instrument references
+
 
 	v0.2.2
 
@@ -2539,6 +2584,7 @@ Binaries will still export from PICO-8 running under Windows,
 		Added: export map as a single image with export foo.map.png
 		Added: @weeble's gamepad improvements to the default html shell (dpad layout detection, better mapping / hotplugging)
 		Added: stack trace on bad memory access e.g. poke(-1,0)
+		Added: fillp can now be applied to sprite drawing (spr / sspr / map / tline), using colours from the secondary palette
 		Improved: General optimisation pass; heavy carts use 20~30% less host cpu
 		Changed: Most api functions are local by default for performance. use "pico8 -global_api 1" if needed for debugging.
 		Changed: unpack() now has a non-zero cost but still fairly fast
@@ -2551,9 +2597,9 @@ Binaries will still export from PICO-8 running under Windows,
 		Changed: tostr() returns "" instead of nil
 		Changed: exporting gif/png from web version now creates a pop-up div that can be dismissed
 		Changed: print() from commandline automatically wraps long strings
+		Changed: print() returns the x position of the next character to be printed (can be used to calculate text width)
 		Changed: glyph constants set only when running cartridge, not when running a command from prompt
 		Changed: Using printh from exported carts outputs files in the same folder as the .exe / .app
-		Changed: Various kana font adjustments
 		Changed: type() returns nothing instead of causing a runtime error
 		Changed: fill pattern is cleared when program is suspended by default. Use poke(0x5f2e,0x20) to preserve.
 		Changed: reset() resets everything from 0x5f00..0x5f7f, same as when program is initialised (including new random seed)
