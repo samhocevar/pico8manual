@@ -1,6 +1,6 @@
 ============================================================================================
 	
-	PICO-8 v0.2.2b
+	PICO-8 v0.2.2c
 	https://www.pico-8.com
 	(c) Copyright 2014-2021 Lexaloffle Games LLP
 	Author: Joseph White // hey@lexaloffle.com
@@ -117,7 +117,9 @@ Welcome to PICO-8!
 	
 	Press escape to stop the program, and once more to enter editing mode.
 
-	A small collection of BBS carts can also be installed with: INSTALL_GAMES
+	A small collection of BBS carts can also be installed to /GAMES with: 
+
+	INSTALL_GAMES
 
 
 
@@ -192,13 +194,10 @@ Welcome to PICO-8!
 	
 		DIDN'T RELOAD; UNSAVED CHANGES
 	
-	PICO-8 does not fully support upper-case characters, and they are automatically converted to
-	lower-case when viewed in the code editor. Note that this also causes unsaved changes to exist, 
-	which means that CTRL-R will stop automatically re-loading the version on disk until it is
-	manually LOAD()ed.
-	
-	Glyph characters (typed with shift-A..Z) are stored in .p8 format and in the host operating 
-	system's clipboard as rough unicode equivalents. 
+	Alternatively, .lua text files can be modifed in a separate editor and then included into the 
+	cartridge's code each time it is run using #INCLUDE (in the desired code location):
+
+		#INCLUDE YOURFILE.LUA
 
 
 :: Backups
@@ -2530,6 +2529,14 @@ Binaries will still export from PICO-8 running under Windows,
 --------------------------------------------------------------------------------------------
 	VERSION HISTORY
 --------------------------------------------------------------------------------------------
+
+
+	v0.2.2c
+
+		Fixed: ?"\ac0" starts from d#0 instead of c0 (again -- 0.2.2b was still broken)
+		Fixed: splore local directory navigation fails when using a relative home path set with -home 
+		Fixed: export .lua.png only shows the first 2730 lines
+
 
 	v0.2.2b
 
