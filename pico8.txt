@@ -2,9 +2,9 @@
     PICO-8 User Manual
 ====================================================================================================
 
-PICO-8 v0.2.4
+PICO-8 v0.2.4b
 https://www.pico-8.com
-(c) Copyright 2014-2021 Lexaloffle Games LLP
+(c) Copyright 2014-2022 Lexaloffle Games LLP
 Author: Joseph White // hey@lexaloffle.com
 
 PICO-8 is built with:
@@ -472,12 +472,12 @@ https://www.lexaloffle.com/pico-8.php?page=resources
 
     :: Extra keys
 
-        CTRL-Z:  Undo
-        CTRL-C:  Copy selected area or selected sprites
-        CTRL-V:  Paste to current sprite location
-        Q,W:     Switch to previous/next sprite
-        1,2:     Switch to previous/next colour
-        TAB:     Toggle fullscreen view
+        CTRL-Z:   Undo
+        CTRL-C/X: Copy/Cut selected area or selected sprites
+        CTRL-V:   Paste to current sprite location
+        Q/A,W/Z:  Switch to previous/next sprite
+        1,2:      Switch to previous/next colour
+        TAB:      Toggle fullscreen view
         Mousewheel or < and > to zoom (centered in fullscreen)
         CTRL-H to toggle hex view (shows sprite index in hexadecimal)
 
@@ -487,6 +487,7 @@ https://www.lexaloffle.com/pico-8.php?page=resources
         V: Flip sprite vertically
         R: Rotate (requires a square selection)
         Cursor keys to shift (loops if sprite selection)
+        DEL/BACKSPACE to clear selected area
 
     :: Sprite Flags
 
@@ -962,7 +963,7 @@ For more details, or to find out about proper Lua, see www.lua.org.
     PLAYER.X = 2 -- is equivalent to PLAYER["X"]
     PLAYER.Y = 3
 
-    See the @{Tables} section for more details.
+    See the @{Table_Functions} section for more details.
 
 :: PICO-8 Shorthand
 
@@ -1280,9 +1281,9 @@ For more details, or to find out about proper Lua, see www.lua.org.
 
         46..49  Index of currently playing SFX on channels 0..3 50..53  Note number (0..31) on 
         channel 0..3 54      Currently playing pattern index 55      Total patterns played 56      
-        Ticks played on current pattern   80..85  UTC time: year, month, day, hour, minute, second 
-        90..95  Local time   100     Current breadcrumb label, or nil 110		Returns true when in 
-        frame-by-frame mode
+        Ticks played on current pattern 57      (Boolean) TRUE when music is playing   80..85  UTC 
+        time: year, month, day, hour, minute, second 90..95  Local time   100     Current 
+        breadcrumb label, or nil 110		Returns true when in frame-by-frame mode
 
     Audio values 16..26 are the legacy version of audio state queries 46..56. It only operates on 
     the current state of the audio mixer, which changes only ~20 times a second (depending on the 
@@ -1677,8 +1678,12 @@ For more details, or to find out about proper Lua, see www.lua.org.
             FILLP(0b0011001111001100.011)
 
 ----------------------------------------------------------------------------------------------------
-    Tables
+    Table Functions
 ----------------------------------------------------------------------------------------------------
+
+    With the exception of PAIRS(), the following functions and the # operator apply only to tables  
+    that are indexed starting from 1 and do not have NIL entries. All other forms of tables can  be 
+    considered as hash maps or sets, rather than arrays that have a length.
 
 
     ADD(TBL, VAL, [INDEX])
@@ -1969,15 +1974,20 @@ For more details, or to find out about proper Lua, see www.lua.org.
         pixel of each pair. Map format is one byte per cel, where each byte normally encodes a 
         sprite index.
 
+    :: Remapping Graphics and Map Data
+
         The GFX, MAP and SCREEN memory areas can be reassigned by setting values at the following 
         addresses:
 
         0X5F54 GFX:    can be 0x00 (default) or 0x60 (use the screen memory as the spritesheet)
         0X5F55 SCREEN: can be 0x60 (default) or 0x00 (use the spritesheet as screen memory)
-        0X5F56 MAP:    can be 0x20 (default) or 0x80 and above (0x8000 and above, in 256b increments)
-        0X5F57 MAP SIZE: 4 bits each for width (high bits) and height (low bits).
+        0X5F56 MAP:    can be 0x20 (default) or 0x10..0x2f, or 0x80 and above.
+        0X5F57 MAP SIZE: map width. 0 means 256. Defaults to 128.
 
-        Each nibble in the map size means 2^n cels. The default is 0x76 (128x64)
+        Addresses can be expressed in 256 byte increments. So 0x20 means 0x2000, 0x21 means 0x2100 
+        etc. Map addresses 0x30..0x3f are taken to mean 0x10..0x1f (shared memory area) Map data 
+        can only be contained inside the memory regions 0x1000..0x2fff, 0x8000..0xffff, and  the 
+        map height is determined to be the largest possible size that fits in the given region.
 
 
     PEEK(ADDR, [N])
@@ -2305,6 +2315,8 @@ For more details, or to find out about proper Lua, see www.lua.org.
     CHR(VAL0, VAL1, ...)
 
         Convert one or more ordinal character codes to a string.
+
+        When 
 
         CHR(64)                    -- "@"
         CHR(104,101,108,108,111)   -- "@"
@@ -2727,8 +2739,8 @@ For more information, please refer to the Lua 5.2 manual.
 
             w wide mode: scales by 2x1 
             t tall mode: scales by 1x2
-            . dotty mode: when wide or tall, draw only even pixels
-            p pinball mode: equivalent to setting wide, tall and dotty
+            = stripey mode: when wide or tall, draw only even pixels
+            p pinball mode: equivalent to setting wide, tall and stripey
             i invert
             b border: toggle 1px padding on left and top // on by default
             # solid background  // off by default, but enabled automatically by \#
@@ -2840,7 +2852,7 @@ For more information, please refer to the Lua 5.2 manual.
             0x8  tall
             0x10 solid background
             0x20 invert
-            0x40 dotty
+            0x40 stripey (when wide or tall)
             0x80 use custom font
          
             // e.g. poke(0x5f58, 0x1 | 0x2 | 0x4 | 0x8 | 0x20 | 0x40)  -- pinball everywhere
@@ -2853,8 +2865,38 @@ For more information, please refer to the Lua 5.2 manual.
 
 
 --------------------------------------------------------------------------------------------
-	VERSION HISTORY
+	PICO-8 VERSION HISTORY
 --------------------------------------------------------------------------------------------
+
+	v0.2.4b
+
+		Added: l in sprite sheet navigator to set loop start / end points (then q,w or a,z to navigate)
+		Added: ctrl-b in gfx editor to paste 2x2 original size ("paste big")
+		Added: DEL / backspace to clear selected region in gfx / map editors, and ctrl-x to cut
+		Added: aggressive_backups option in config.txt (off by default)
+		Added: transform_screen in config.txt to globally rotate / flip the video output
+		Added: stat(57) (boolean) true when music triggered by music() is playing or about to start
+		Changed: memset() faster than using peek4/poke4; now 2 cycles per byte at 8MHz (was 4)
+		Changed: "running at < 30fps" warning on boot now only for raspi builds, and w/ higher tolerance
+		Changed: Controller inputs are accepted even when PICO-8 is not the foreground application
+		Changed: Map can be located at 0x1000 .. 0x2f00 using poke(0x5f56, 0x11) .. poke(0x5f56,0x2f)
+		Changed: Dotty text mode is now "\^=" ("Stripey") instead of "\^." // #gunayawuho #klax #impossible
+		Fixed: (not confirmed) crash causing 0-byte .p8 when audio mixer is called during save / run
+		Fixed: preprocessor not counting comments as white space; should allow: ".. end--[[]]if .."
+		Fixed: pal(nil) behaving the same way as pal(0); should be same as pal() // broke #rtype-2
+		Fixed: note entry in sfx tracker is silent after running cartridge until pressing space to playback
+		Fixed: sub("abc", 4, 4) returns "c" (regression in 0.2.4)
+		Fixed: SPLORE cart update prompt does not appear when server replies too quickly (race condition)
+		Fixed: SPLORE cart update prompt only checks version once per session (can't refresh until it shows up)
+		Fixed: EXPORT command does not flatten includes when exporting to .p8.png / .p8.rom format
+		Fixed: EXPORT command discards source code changes since last run or load
+		Fixed: printing a one-off glyph using "\^." terminates the whole string when last byte is a zero
+		Fixed: Crash when loading a cart with fewer tabs, then creating a new tab and pasting.
+		Fixed: . command runs at 30fps even for a 60fps cart (-> _update60 is called twice, _draw once)
+		Fixed: Custom menu items become broken after suspending a cart, entering a lua command, and then resuming
+		Fixed: memset() with a non-zero value in shared memory region (0x1000..0x1fff) causes garbage corresponding mget() values
+		Fixed: web player/exports: ctrl-r causes erroneous "external changes reloaded" message and code corruption
+
 
 	v0.2.4
 
