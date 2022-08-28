@@ -2,7 +2,7 @@
     PICO-8 User Manual
 ====================================================================================================
 
-PICO-8 v0.2.4c
+PICO-8 v0.2.5
 https://www.pico-8.com
 (c) Copyright 2014-2022 Lexaloffle Games LLP
 Author: Joseph White // hey@lexaloffle.com
@@ -398,6 +398,7 @@ https://www.lexaloffle.com/pico-8.php?page=resources
     CTRL-D to duplicate current line
     TAB to indent a selection (shift to un-indent)
     CTRL-B to comment / uncomment selected block
+    CTRL-U to get help on the keyword under the cursor
 
     To enter special characters that represent buttons (and other glyphs), use SHIFT-L,R,U,D,O,X 
     There are 3 additional font entry modes that can be toggled:
@@ -1178,12 +1179,16 @@ For more details, or to find out about proper Lua, see www.lua.org.
         Open the carts folder in the host operating system.
 
 
-    LS
+    LS([DIRECTORY])
 
-    DIR
+        List .p8 and .p8.png files in given directory (folder), relative to the current directory. 
+        Items that are directories end in a slash (e.g. "foo/"). 
 
-        List files in the current directory. When called from a running program, returns a list  of 
-        all .p8 and .p8.png files in the same directory.
+        When called from a running cartridge, LS can only be used locally and returns a table of 
+        the results. When called from a BBS cart, LS returns nil.
+
+        Directories can only resolve inside of PICO-8's virtual drive; LS("..") from the root 
+        directory will resolve to the root directory.
 
 
     RUN([PARAM_STR])
@@ -1400,8 +1405,12 @@ For more details, or to find out about proper Lua, see www.lua.org.
 
     CLIP(X, Y, W, H, [CLIP_PREVIOUS])
 
-        Sets the screen's clipping region in pixels CLIP() to reset When clip_previous is true, 
-        clip the new clipping region by the old one.
+        Sets the clipping rectangle in pixels. All drawing operations will be clipped to the 
+        rectangle at x, y with a width and height of w,h.
+
+        CLIP() to reset.
+
+        When CLIP_PREVIOUS is true, clip the new clipping region by the old one.
 
 
     PSET(X, Y, [COL])
@@ -1550,8 +1559,8 @@ For more details, or to find out about proper Lua, see www.lua.org.
             The draw palette re-maps colours when they are drawn. For example, an orange flower 
             sprite can be drawn as a red flower by setting the 9th palette value to 8:
 
-            PAL(9,8)     -- draw subsequent orange (colour 9) pixels as red (colour 8) SPR(1,70,60) 
-            -- any orange pixels in the sprite will be drawn with red instead
+            PAL(9,8)     -- draw subsequent orange (colour 9) pixels as red (colour 8)
+            SPR(1,70,60) -- any orange pixels in the sprite will be drawn with red instead
 
             Changing the draw palette does not affect anything that was already drawn to the 
             screen.
@@ -1568,8 +1577,8 @@ For more details, or to find out about proper Lua, see www.lua.org.
             Used by @FILLP() for drawing sprites. This provides a mapping from a single 4-bit 
             colour index to two 4-bit colour indexes.
 
-        PAL()  resets all palettes to system defaults (including transparency values) PAL(P) resets 
-        a particular palette (0..2) to system defaults
+        PAL()  resets all palettes to system defaults (including transparency values)
+        PAL(P) resets a particular palette (0..2) to system defaults
 
 
     PAL(TBL, [P])
@@ -1702,19 +1711,20 @@ For more details, or to find out about proper Lua, see www.lua.org.
                 PAL(3,12)
                 CIRCFILL(64,64,20,3)
 
-        The fill pattern can also be set by setting bits in any colour parameter:
+        The fill pattern can also be set by setting bits in any colour parameter (for example, the 
+        parameter to @COLOR(), or the last parameter to @LINE(), @RECT() etc.
 
-            POKE(0x5F34, 1) -- sets integrated fillpattern + colour mode CIRCFILL(64,64,20, 
-            0x114E.ABCD) -- sets fill pattern to ABCD
+            POKE(0x5F34, 1) -- sets integrated fillpattern + colour mode
+            CIRCFILL(64,64,20, 0x114E.ABCD) -- sets fill pattern to ABCD
 
-            -- bit  0x1000.0000 means the non-colour bits should be observed -- bit  0x0700.0000 
-            0x1 transparency, 0x2 apply to sprites, 0x4 apply secondary palette  -- bits 
-            0x00FF.0000 are the usual colour bits -- bits 0x0000.FFFF are interpreted as the fill 
-            pattern
+            When using the colour parameter to set the fill pattern, the following bits are used:
 
-        The fill pattern can be applied to sprites (spr, sspr, map, tline) using bit 0b0.01
-
-            FILLP(0b0011001111001100.011)
+            bit  0x1000.0000 means the non-colour bits should be observed
+            bit  0x0100.0000 transparency
+            bit  0x0200.0000 apply to sprites
+            bit  0x0400.0000 apply secondary palette
+            bits 0x00FF.0000 are the usual colour bits
+            bits 0x0000.FFFF are interpreted as the fill pattern
 
 ----------------------------------------------------------------------------------------------------
     Table Functions
@@ -1913,7 +1923,7 @@ For more details, or to find out about proper Lua, see www.lua.org.
         When X,Y is outside of the map range, MSET returns 0.
 
 
-    MAP([CELL_X], CELL_Y, [SX, SY], [CELL_W, CELL_H], [LAYERS])
+    MAP(CELL_X, CELL_Y, [SX, SY], [CELL_W, CELL_H], [LAYERS])
 
         Draw section of map (starting from CELL_X, CELL_Y) at screen position SX, SY (pixels).
 
@@ -1929,7 +1939,7 @@ For more details, or to find out about proper Lua, see www.lua.org.
         MAP() is often used in conjunction with CAMERA(). To draw the map so that a player object 
         (at PL.X in PL.Y in pixels) is centered:
 
-        CAMERA(PL.X - 64, PL.Y - 64
+        CAMERA(PL.X - 64, PL.Y - 64)
         MAP()
 
         LAYERS is a bitfield. When given, only sprites with matching sprite flags are drawn. For 
@@ -2358,7 +2368,7 @@ For more details, or to find out about proper Lua, see www.lua.org.
         When 
 
         CHR(64)                    -- "@"
-        CHR(104,101,108,108,111)   -- "@"
+        CHR(104,101,108,108,111)   -- "hello"
 
 
     ORD(STR, [INDEX], [NUM_RESULTS])
@@ -2871,13 +2881,22 @@ For more information, please refer to the Lua 5.2 manual.
         characters = 2048 bytes. Each character is an 8x8 bitfield (1 bit/pixel), where starting 
         from the top, each row is a single byte starting with 0x1 on the left.
 
-        The first five bytes (character 0 is never drawn) describes attributes of the font:
+        The first 128 bytes (characters 0~15 are never drawn) describe attributes of the font:
 
             0x5600 character width in pixels (can be more than 8, but only 8 pixels are drawn)
             0x5601 character width for character 128 and above
             0x5602 character height in pixels
             0x5603 draw offset x
             0x5604 draw offset y
+            0x5605 flags: 0x1 apply_size_adjustments  0x2: apply tabs relative to cursor home
+            0x5606 tab width in pixels (used only when alt font is drawn)
+            0x5607 unused
+
+        The remaining 120 bytes are used to adjust the width and vertical offset of characters 
+        16..255. Each nibble (low nibbles first) describes the adjustments for one characters:
+
+            bits 0x7: adjust character width by 0,1,2,3,-4,-3,-2,-1
+            bit  0x8: when set, draw the character one pixel higher (useful for latin accents)
 
     :: Default Attributes
 
@@ -2895,17 +2914,58 @@ For more information, please refer to the Lua 5.2 manual.
             0x80 use custom font
          
             // e.g. poke(0x5f58, 0x1 | 0x2 | 0x4 | 0x8 | 0x20 | 0x40)  -- pinball everywhere
+
         0x5f59 char_w   (low nibble), char_h   (high)
         0x5f5a char_w2  (low nibble), tab_w    (high)
         0x5f5b offset_x (low nibble), offset_y (high)
-
-        // any nibbles equal to 0 are ignored // tab_w values are mapped to 4..64
+         
+        // any nibbles equal to 0 are ignored
+        // tab_w (global tab width) values are mapped to 4..60
 
 
 
 --------------------------------------------------------------------------------------------
 	PICO-8 VERSION HISTORY
 --------------------------------------------------------------------------------------------
+
+	v0.2.5
+
+		Added: Help topics. Use help command, or ctrl-t in code editor to get help on whatever is at the cursor.
+		Added: (html exports / bbs) downloadable .wav export using extcmd("audio_rec"), extcmd("audio_end")
+		Added: inext (to match next).  -> can do: for i,v in inext,tbl do ... end
+		Added: floating selection layer in map editor (solves various bugs and undo / selection issues) 
+		Added: ~ can be used as xor instead of ^^ (same as Lua 5.3/5.4)
+		Added: When running a program locally, ls() can now take a directory name; use stat(124) to get pwd
+		Added: Variable width P8SCII fonts
+		Added: ctrl-click on compressed capcity (bottom right) to get realtime updates of compressed size in bytes
+		Added: export -t @clip to get a hexdump of compressed code section copied to clipboard
+		Added: pico8 -scancodes and map_scancodes (config.txt) for manually mapping keys to alternative scancodes 
+		Added: sub(str,pos,pos) can be written as str[pos] (but returns nil when pos is not a valid index)
+		Changed: host_framerate_control 1 (config.txt) now means "let PICO-8 decide"; is disabled for Mac/Win/Linux
+		Changed: in map editor, pan with cursor keys when nothing is selected
+		Changed: use scancodes for sfx navigation (US:-=_+) and spd change (US:,.<>) to avoid azerty collisions
+		Changed: gfx_grid_lines in config.txt is taken to be a colour for the grid lines (16 for black)
+		Changed: can ctrl-h in gfx editor to toggle hex mode (sprite index shown in hex; map vals shown)
+		Changed: '-' allowed in filenames when not first character
+		Changed: linux builds use libcurl.so for bbs requests, or drops down to wget on failure to dlopen
+		Changed: increased maximum gif len for web exports to 30 seconds
+		Changed: peek/poke can now read/write up to 32767 values (was 8192)
+		Changed: web player default gif len is 16 seconds (was 8)
+		Changed: sub(str, pos, nil) returns whole string (pre-0.2.4 behaviour). For single chars, can now use str[pos].
+		Fixed: Windows reserved filenames (lpt1, com1 etc) are accepted
+		Fixed: Nested coroutines unexpectedly end when interrupted by reaching end of frame
+		Fixed: print() colour is remapped twice when set in parameter // pal(6,7) pal(7,8) print("white",6)
+		Fixed: circ() breaks on 32-bit builds, with radius > 1024
+		Fixed: ctrl-c to copy commandline error message does not encode glyphs as unicode
+		Fixed: LS command not resolving relative paths
+		Fixed: twitter char count for chr(127) ○ should be 2 (was 1) and chr(149) ˇ should be 1 (was 2)
+		Fixed: colour parameter not converted from string in rect, rectfill, pset (regression from 0.2.2)
+		Fixed: ord("foo", 1, 0) returns "too many ord results" -- should return nothing
+		Fixed: save @url includes ?g= when no gfx data (is redundant)
+		Fixed: (web export) html pause button does not show up as btnp(6) / btn(6)
+		Fixed: (web export) codo_textarea triggering Mac accent character selector even when cart doesn't use clipboard
+		Fixed: save @url failing when encoded length is > 2000 chars long instead of > 2040 charss
+		Fixed: can enter an illegal note (e-5) in sfx editor
 
 	v0.2.4c
 
@@ -2914,11 +2974,12 @@ For more information, please refer to the Lua 5.2 manual.
 		Added: ctrl-g in sprite editor to toggle grid lines when zoomed in
 		Added: IMPORT -L FOO.PNG to import a 128x128 png to the cartridge label
 		Added: EXPORT -L FOO.PNG to export a 128x128 png of the cartridge label
-		Added: EXPORT -T FOO.P8.ROM to export only code section (t for tiny)
+		Added: EXPORT -T FOO.P8.ROM to export only code section (t for tiny)	
 		Added: ctrl-click on character count (bottom right) to see the twitter count (glyphs count as 2)
 		Added: __meta:*__ section to .p8 format -- can be used by external tools to store custom data
 		Added: extcmd("audio_rec") works from exported binaries, and with custom exported filenames
 		Added: read_controllers_in_background in config.txt (0 by default)
+		Added: periodic backups
 		Changed: .p8.rom files that are 0x3d00 bytes or less are loaded into code section
 		Changed: saved filenames can not include gylphs, or any of !"#$%&'()*+,-:;<=>?[\]^`{|}~
 		Fixed: can't drag and drop png into sprite editor
