@@ -2,7 +2,7 @@
     PICO-8 User Manual
 ====================================================================================================
 
-PICO-8 v0.2.5
+PICO-8 v0.2.5b
 https://www.pico-8.com
 (c) Copyright 2014-2022 Lexaloffle Games LLP
 Author: Joseph White // hey@lexaloffle.com
@@ -2928,9 +2928,14 @@ For more information, please refer to the Lua 5.2 manual.
 	PICO-8 VERSION HISTORY
 --------------------------------------------------------------------------------------------
 
+
+	v0.2.5b (Linux)
+
+		Fixed: failing to drop down to wget when libcurl can not be loaded
+
 	v0.2.5
 
-		Added: Help topics. Use help command, or ctrl-t in code editor to get help on whatever is at the cursor.
+		Added: Help topics. Use help command, or ctrl-u in code editor to get help on whatever is at the cursor.
 		Added: (html exports / bbs) downloadable .wav export using extcmd("audio_rec"), extcmd("audio_end")
 		Added: inext (to match next).  -> can do: for i,v in inext,tbl do ... end
 		Added: floating selection layer in map editor (solves various bugs and undo / selection issues) 
