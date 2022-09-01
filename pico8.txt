@@ -2,7 +2,7 @@
     PICO-8 User Manual
 ====================================================================================================
 
-PICO-8 v0.2.5b
+PICO-8 v0.2.5c
 https://www.pico-8.com
 (c) Copyright 2014-2022 Lexaloffle Games LLP
 Author: Joseph White // hey@lexaloffle.com
@@ -1428,7 +1428,7 @@ For more details, or to find out about proper Lua, see www.lua.org.
 
     PGET(X, Y)
 
-        Returns the colour of a pixel at (X, Y), or 0 when (X, Y) is outside the clipping region.
+        Returns the colour of a pixel on the screen at (X, Y).
 
         WHILE (TRUE) DO
             X, Y = RND(128), RND(128)
@@ -1436,12 +1436,22 @@ For more details, or to find out about proper Lua, see www.lua.org.
             PSET(X, Y, PGET(DX+X, DY+Y))
         END
 
+        When X and Y are out of range, PGET returns 0. A custom return value can be specified with:
+
+        POKE(0x5f36, 0x10)
+        POKE(0x5f5B, NEWVAL)
+
 
     SGET(X, Y)
 
     SSET(X, Y, [COL])
 
         Get or set the colour (COL) of a sprite sheet pixel.
+
+        When X and Y are out of range, SGET returns 0. A custom value can be specified with:
+
+        POKE(0x5f36, 0x10)
+        POKE(0x5f59, NEWVAL)
 
 
     FGET(N, [F])
@@ -1920,7 +1930,10 @@ For more details, or to find out about proper Lua, see www.lua.org.
 
         Get or set map value (VAL) at X,Y
 
-        When X,Y is outside of the map range, MSET returns 0.
+        When X and Y are out of range, MGET returns 0. A custom return value can be specified with:
+
+        POKE(0x5f36, 0x10)
+        POKE(0x5f5a, NEWVAL)
 
 
     MAP(CELL_X, CELL_Y, [SX, SY], [CELL_W, CELL_H], [LAYERS])
@@ -2923,10 +2936,20 @@ For more information, please refer to the Lua 5.2 manual.
         // tab_w (global tab width) values are mapped to 4..60
 
 
-
 --------------------------------------------------------------------------------------------
 	PICO-8 VERSION HISTORY
 --------------------------------------------------------------------------------------------
+
+	v0.2.5c
+
+		Added: set out of range return value for sget, mget, pget: poke (0x5f36,0x10) and set at 0x5f59..0x5f5b
+		Changed: rnd(str) no longer returns a random char from strings (breaks existing carts using e.g. rnd"5")
+		Changed: html exports default to 75% volume instead of 100%
+		Fixed: extcmd("audio_rec"), extcmd("audio_end") not working in html exports
+		Fixed: drag & drop (via serial 0x802) not responding to dropped file in html exports
+		Fixed: (again) can enter an illegal note (e-5) in sfx editor
+		Fixed: dir() missing during runtime (alias for ls)
+		Fixed: some mistakes in help text (outdated sub() description, yield misspelling)
 
 
 	v0.2.5b (Linux)
@@ -2945,7 +2968,7 @@ For more information, please refer to the Lua 5.2 manual.
 		Added: ctrl-click on compressed capcity (bottom right) to get realtime updates of compressed size in bytes
 		Added: export -t @clip to get a hexdump of compressed code section copied to clipboard
 		Added: pico8 -scancodes and map_scancodes (config.txt) for manually mapping keys to alternative scancodes 
-		Added: sub(str,pos,pos) can be written as str[pos] (but returns nil when pos is not a valid index)
+		Added: sub(str,pos,pos) can be written as str[pos]
 		Changed: host_framerate_control 1 (config.txt) now means "let PICO-8 decide"; is disabled for Mac/Win/Linux
 		Changed: in map editor, pan with cursor keys when nothing is selected
 		Changed: use scancodes for sfx navigation (US:-=_+) and spd change (US:,.<>) to avoid azerty collisions
@@ -2971,6 +2994,7 @@ For more information, please refer to the Lua 5.2 manual.
 		Fixed: (web export) codo_textarea triggering Mac accent character selector even when cart doesn't use clipboard
 		Fixed: save @url failing when encoded length is > 2000 chars long instead of > 2040 charss
 		Fixed: can enter an illegal note (e-5) in sfx editor
+
 
 	v0.2.4c
 
