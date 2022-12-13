@@ -2,7 +2,7 @@
     PICO-8 User Manual
 ====================================================================================================
 
-PICO-8 v0.2.5c
+PICO-8 v0.2.5d
 https://www.pico-8.com
 (c) Copyright 2014-2022 Lexaloffle Games LLP
 Author: Joseph White // hey@lexaloffle.com
@@ -37,9 +37,10 @@ https://www.lexaloffle.com/pico-8.php?page=resources
     Input:   6-button controllers
     Carts:   32k data encoded as png files
     Sound:   4 channel, 64 definable chip blerps
-    Code:    Lua (max 8192 tokens of code) 
+    Code:    P8 Lua (max 8192 tokens of code) 
+    CPU:     4M vm insts/sec
     Sprites: Single bank of 128 8x8 sprites (+128 shared)
-    Map:     128x32 8-bit cells (+128x32 shared)
+    Map:     128 x 32 Tilemap (+ 128 x 32 shared)
 
 ====================================================================================================
     Getting Started
@@ -534,15 +535,17 @@ https://www.lexaloffle.com/pico-8.php?page=resources
     (centered in fullscreen) CTRL-H to toggle hex view (shows tile values and sprite index in 
     hexadecimal)
 
-    To move sprites in the sprite sheet without breaking references to them in the map:
+    Moving sprites in the sprite sheet without breaking reference to them in the map is a little 
+    tricky, but possible:
 
-        1. Select the area of the map you would like to alter (defaults to the top half of the map)
-            // press ctrl-A twice to select the full map including shared memory
+        1. Press ENTER to clear any map selection
         2. Select the sprites you would like to move (while still in map view), and press Ctrl-X
-        3. Select the destination sprite (also while still in map view) and press Ctrl-V
-
-        // Note: this operation modifies the undo history for both the map and sprite editors, but 
-        // PICO-8 will try to keep them in sync where possible. Otherwise, changes caused by moving 
+        3. Select the area of the map you would like to alter (defaults to the top half of the map)
+            // press ctrl-A twice to select the full map including shared memory
+        4. Select the destination sprite (also while still in map view) and press Ctrl-V
+         
+        // Note: this operation modifies the undo history for both the map and sprite editors, but
+        // PICO-8 will try to keep them in sync where possible. Otherwise, changes caused by moving
         // map sprites can be reverted by also manually undoing in the sprite editor.
 
 ----------------------------------------------------------------------------------------------------
@@ -1436,7 +1439,8 @@ For more details, or to find out about proper Lua, see www.lua.org.
             PSET(X, Y, PGET(DX+X, DY+Y))
         END
 
-        When X and Y are out of range, PGET returns 0. A custom return value can be specified with:
+        When X and Y are out of bounds, PGET returns 0. A custom return value can be specified 
+        with:
 
         POKE(0x5f36, 0x10)
         POKE(0x5f5B, NEWVAL)
@@ -1448,7 +1452,7 @@ For more details, or to find out about proper Lua, see www.lua.org.
 
         Get or set the colour (COL) of a sprite sheet pixel.
 
-        When X and Y are out of range, SGET returns 0. A custom value can be specified with:
+        When X and Y are out of bounds, SGET returns 0. A custom value can be specified with:
 
         POKE(0x5f36, 0x10)
         POKE(0x5f59, NEWVAL)
@@ -1919,8 +1923,8 @@ For more details, or to find out about proper Lua, see www.lua.org.
     Map
 ----------------------------------------------------------------------------------------------------
 
-    The PICO-8 map is a 128x32 grid of 8-bit cells, or 128x64 when using the shared memory. When  
-    using the map editor, the meaning of each cell is taken to be an index into the sprite sheet  
+    The PICO-8 map is a 128x32 grid of 8-bit values, or 128x64 when using the shared memory. When  
+    using the map editor, the meaning of each value is taken to be an index into the sprite sheet  
     (0..255). However, it can instead be used as a general block of data.
 
 
@@ -1930,21 +1934,22 @@ For more details, or to find out about proper Lua, see www.lua.org.
 
         Get or set map value (VAL) at X,Y
 
-        When X and Y are out of range, MGET returns 0. A custom return value can be specified with:
+        When X and Y are out of bounds, MGET returns 0, or a custom return value that can be 
+        specified with:
 
         POKE(0x5f36, 0x10)
         POKE(0x5f5a, NEWVAL)
 
 
-    MAP(CELL_X, CELL_Y, [SX, SY], [CELL_W, CELL_H], [LAYERS])
+    MAP(TILE_X, TILE_Y, [SX, SY], [TILE_W, TILE_H], [LAYERS])
 
-        Draw section of map (starting from CELL_X, CELL_Y) at screen position SX, SY (pixels).
+        Draw section of map (starting from TILE_X, TILE_Y) at screen position SX, SY (pixels).
 
-        To draw a 4x2 blocks of cells starting from 0,0 in the map, to the screen at 20,20:
+        To draw a 4x2 blocks of tiles starting from 0,0 in the map, to the screen at 20,20:
 
         MAP(0, 0, 20, 20, 4, 2) 
 
-        CELL_W and CELL_H default to 128,32 (the top half of the map). To draw the whole map, 
+        TILE_W and TILE_H default to 128,32 (the top half of the map). To draw the whole map, 
         including the bottom half shared with the sprite sheet, use:
 
         MAP(0, 0, 0, 0, 128, 64)
@@ -1997,6 +2002,19 @@ For more details, or to find out about proper Lua, see www.lua.org.
         Sprite 0 is taken to mean "empty" and not drawn. To disable this behaviour, use: 
         POKE(0x5F36, 0x8)
 
+        :: Setting TLINE Precision
+
+        By default, tline coordinates (mx,my,mdx,mdy) are expressed in tiles. This means that 1 
+        pixel is 0.125, and only 13 bits are used for the fractional part. If more precision is 
+        needed, the coordinate space can be adjusted to allow more bits for the fractional part. 
+        This can be useful for things like textured walls, where the accumulated error from mdx,mdy 
+        rounding maybe become visible when viewed up close.
+
+        The number of bits used for the fractional part of each pixel is stored in a special 
+        register that can be adjusted by calling TLINE once with a single argument:
+
+        TLINE(16) -- MX,MY,MDX,MDY expressed in pixels
+
 ----------------------------------------------------------------------------------------------------
     Memory
 ----------------------------------------------------------------------------------------------------
@@ -2033,7 +2051,7 @@ For more details, or to find out about proper Lua, see www.lua.org.
         User data has no particular meaning and can be used for anything via @MEMCPY(), @PEEK() & 
         @POKE(). Persistent cart data is mapped to 0x5e00..0x5eff but only stored if @CARTDATA() 
         has been called. Colour format (gfx/screen) is 2 pixels per byte: low bits encode the left 
-        pixel of each pair. Map format is one byte per cel, where each byte normally encodes a 
+        pixel of each pair. Map format is one byte per tile, where each byte normally encodes a 
         sprite index.
 
     :: Remapping Graphics and Map Data
@@ -2047,9 +2065,14 @@ For more details, or to find out about proper Lua, see www.lua.org.
         0X5F57 MAP SIZE: map width. 0 means 256. Defaults to 128.
 
         Addresses can be expressed in 256 byte increments. So 0x20 means 0x2000, 0x21 means 0x2100 
-        etc. Map addresses 0x30..0x3f are taken to mean 0x10..0x1f (shared memory area) Map data 
+        etc. Map addresses 0x30..0x3f are taken to mean 0x10..0x1f (shared memory area). Map data 
         can only be contained inside the memory regions 0x1000..0x2fff, 0x8000..0xffff, and  the 
         map height is determined to be the largest possible size that fits in the given region.
+
+        GFX and SCREEN memory mapping happens at a low level which also affects memory access 
+        functions (peek, poke, memcpy). The 8k memory blocks starting at 0x0 and 0x6000 can be 
+        thought of as pointers  to a separate video ram, and settings the values at 0X5F54 and 
+        0X5F56 alters those pointers.
 
 
     PEEK(ADDR, [N])
@@ -2939,6 +2962,36 @@ For more information, please refer to the Lua 5.2 manual.
 --------------------------------------------------------------------------------------------
 	PICO-8 VERSION HISTORY
 --------------------------------------------------------------------------------------------
+
+	v0.2.5d
+
+		Added: tline(bits) to set number of bits used for fractional part of mx,my,mdx,mdy (13 by default)
+		Added: ctrl+mousewheel to scroll code horizontally
+		Added: current bbs cartridge id shown in window title (config.txt show_cart_id_in_title to disable)
+		Added: poke(0x5f36, (@0x5f36)|0x80) to enable character wrap by default when printing
+		Added: blit_method in config.txt  // Can use a software blitter by default (slower but more reliable)
+		Added: reminder when re-locating sprites that only the top half of map is altered by default
+		Changed: print() returns both max(cur_x), max(cur_y) and includes non-printed characters (e.g. tabs)
+		Changed: extcmd("folder") and extcmd("set_title", "foo") can now be used from bbs carts 
+		Changed: Indexing a string out of range returns nil (was "")
+		Changed: Replaced most of pre-processor with Lua parser modifications based on z8lua (fixes various edge cases)
+		Changed: "a[foo()] += 1" only evaluates foo() once
+		Changed: out-of-bound tile values can be drawn using map(), tline()
+		Changed: extcmd("audio_rec") can record a maximum of 8 minutes (was no limit previously)
+		Changed: Rate limits are now per-minute: 10MB of log wries, 64 different files, 10 extcmd("folder")'s)
+		Fixed: Infinite tokens hack (was caused by now-replaced pre-processor)
+		Fixed: Only 4 controllers mapped to 0x5f00+76
+		Fixed: h toggles hexadecimal mode in gfx editor (should be ctrl-h -- h is to flip sprite horizontally)
+		Fixed: out-of-bounds value doesn't respect custom map size
+		Fixed: cutting or clearing a selection of sprites does not also clear the sprite flags
+		Fixed: P8SCII repeat-character command fails on zero repetions; ?"a\*0bc" should print "ac", not "abc"
+		Fixed: pxa code compression inefficient when >= 32k matching triplets (typically "000")
+		Fixed: print() return value max(cur_x) returns 0 when max(cur_x < 0)
+		Fixed: holding menu button to force pause menu to open broken in binary exports
+		Fixed: copying / pasting in commandline doesn't respect punyfont character encoding
+		Fixed: (Manual) Steps 1 & 2 on how to move sprites in the map are in the wrong order
+		Fixed: Unhelpful / no error messages when the wrong format for HELP is used 
+
 
 	v0.2.5c
 
