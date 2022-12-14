@@ -2,7 +2,7 @@
     PICO-8 User Manual
 ====================================================================================================
 
-PICO-8 v0.2.5d
+PICO-8 v0.2.5e
 https://www.pico-8.com
 (c) Copyright 2014-2022 Lexaloffle Games LLP
 Author: Joseph White // hey@lexaloffle.com
@@ -16,6 +16,7 @@ PICO-8 is built with:
     WiringPi http://wiringpi.com/
     libb64 by Chris Venter
     miniz by Rich Geldreich
+    z8lua by Sam Hocevar https://github.com/samhocevar/z8lua
 
 Latest version of this manual (as html, txt) and other resources:
 
@@ -1949,10 +1950,7 @@ For more details, or to find out about proper Lua, see www.lua.org.
 
         MAP(0, 0, 20, 20, 4, 2) 
 
-        TILE_W and TILE_H default to 128,32 (the top half of the map). To draw the whole map, 
-        including the bottom half shared with the sprite sheet, use:
-
-        MAP(0, 0, 0, 0, 128, 64)
+        TILE_W and TILE_H default to the entire map (including shared space when applicable).
 
         MAP() is often used in conjunction with CAMERA(). To draw the map so that a player object 
         (at PL.X in PL.Y in pixels) is centered:
@@ -2963,6 +2961,11 @@ For more information, please refer to the Lua 5.2 manual.
 	PICO-8 VERSION HISTORY
 --------------------------------------------------------------------------------------------
 
+	v0.2.5e
+
+		Fixed: Uppercase characters not loaded as punycode (causing _ENV to fail)
+
+
 	v0.2.5d
 
 		Added: tline(bits) to set number of bits used for fractional part of mx,my,mdx,mdy (13 by default)
@@ -2971,6 +2974,7 @@ For more information, please refer to the Lua 5.2 manual.
 		Added: poke(0x5f36, (@0x5f36)|0x80) to enable character wrap by default when printing
 		Added: blit_method in config.txt  // Can use a software blitter by default (slower but more reliable)
 		Added: reminder when re-locating sprites that only the top half of map is altered by default
+		Added: draw boot sound as note glyphs on startup when sound is off
 		Changed: print() returns both max(cur_x), max(cur_y) and includes non-printed characters (e.g. tabs)
 		Changed: extcmd("folder") and extcmd("set_title", "foo") can now be used from bbs carts 
 		Changed: Indexing a string out of range returns nil (was "")
