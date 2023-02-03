@@ -2,9 +2,9 @@
     PICO-8 User Manual
 ====================================================================================================
 
-PICO-8 v0.2.5e
+PICO-8 v0.2.5f
 https://www.pico-8.com
-(c) Copyright 2014-2022 Lexaloffle Games LLP
+(c) Copyright 2014-2023 Lexaloffle Games LLP
 Author: Joseph White // hey@lexaloffle.com
 
 PICO-8 is built with:
@@ -1557,6 +1557,15 @@ For more details, or to find out about proper Lua, see www.lua.org.
 
         If (X1, Y1) are not given, the end of the last drawn line is used.
 
+        LINE() with no parameters means that the next call to LINE(X1, Y1) will only set the end 
+        points without drawing.
+
+        CLS()
+        LINE()
+        FOR I=0,6 DO
+            LINE(64+COS(I/6)*20, 64+SIN(I/6)*20, 8+I)
+        END	
+
 
     RECT(X0, Y0, X1, Y1, [COL])
 
@@ -2960,6 +2969,25 @@ For more information, please refer to the Lua 5.2 manual.
 --------------------------------------------------------------------------------------------
 	PICO-8 VERSION HISTORY
 --------------------------------------------------------------------------------------------
+
+	v0.2.5f
+
+		Added: CONFIG DRAW_TABS 1 to show tab characters in code editor (previously required editing config.txt) 
+		Changed: tokenizer recognises long comments / string using [=*[ ]=*] e.g. [==[ long string ]==]
+		Changed: Nested long comments and strings no longer allowed
+		Changed: x % 0 gives 0 (was x)
+		Optimised: software blitter now faster when using PocketCHIP, windowed raspi or blit_method 1
+		Fixed: infinite tokens exploit introduced in 0.2.5d (due to pre-processor changes)
+		Fixed: >>>= operator is a NOP (bug introduced in 0.2.5d)
+		Fixed: (raspi 32-bit) window not visible under Gameforce Chi / EmuELEC -- bug introduced in 0.2.5e
+		Fixed: fixed: s="x".."=" counts as 4 tokens instead of 5
+		Fixed: Running a cartridge containing _meta_ data prints a memory allocation warning to stdout
+		Fixed: Code compressing to >= 32k reports size as (compressed_size & 0x7fff) resulting in corruped exports
+		Fixed: stat(54) loops when left-most channel is looping (should return total played ticks on current pattern)
+		Fixed: extcmd("audio_rec") maximum length is 2 minutes (meant to be 8 -- and now only applies to web)
+		Fixed: Frog Home crashes because of (now unsupported) "local x+=.." form. // INSTALL_GAMES for fixed version
+		Fixed: Starting P8SCII font height affects total line height even when no characters are printed in that font
+
 
 	v0.2.5e
 
