@@ -2,7 +2,7 @@
     PICO-8 User Manual
 ====================================================================================================
 
-PICO-8 v0.2.5f
+PICO-8 v0.2.5g
 https://www.pico-8.com
 (c) Copyright 2014-2023 Lexaloffle Games LLP
 Author: Joseph White // hey@lexaloffle.com
@@ -2969,6 +2969,12 @@ For more information, please refer to the Lua 5.2 manual.
 --------------------------------------------------------------------------------------------
 	PICO-8 VERSION HISTORY
 --------------------------------------------------------------------------------------------
+
+	v0.2.5g
+
+		Fixed: tonum("123abc") returns 123 (should return nothing) // also breaks split(). regression in 0.2.5f
+		Fixed: draw_tabs not listed by CONFIG command
+
 
 	v0.2.5f
 
