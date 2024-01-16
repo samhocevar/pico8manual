@@ -2,9 +2,9 @@
     PICO-8 User Manual
 ====================================================================================================
 
-PICO-8 v0.2.5g
+PICO-8 v0.2.6
 https://www.pico-8.com
-(c) Copyright 2014-2023 Lexaloffle Games LLP
+(c) Copyright 2014-2024 Lexaloffle Games LLP
 Author: Joseph White // hey@lexaloffle.com
 
 PICO-8 is built with:
@@ -700,6 +700,26 @@ https://www.lexaloffle.com/pico-8.php?page=resources
     that gradually fades out. To invert this behaviour, effect 3 (normally 'drop') can be used when 
     triggering the note. All other effect values	have  their usual meaning when triggering SFX 
     instruments.	
+
+:: Waveform Instruments
+
+    Waveform instruments function the same way as SFX instruments, but consist of a custom 64-byte 
+    looping waveform. Click on the waveform toggle button in the SFX  editor to use SFX 0..7 as a 
+    waveform instrument. In this mode, samples can be  drawn with the mouse.
+
+:: Scale Snapping
+
+    When drawing notes in pitch mode, hold CTRL to snap to the currently defined scale. This is the 
+    C minor pentatonic scale by default, but can be customised using the scale editor mode. There 
+    is a little keyboard icon on the bottom right to toggle this. There are 2 tranpose buttons, 1 
+    invert button, and 3 scale preset  buttons:
+
+    Dim  6 diminished 6 scale - invert to get a whole-half scale
+    Maj  Major scale - invert to get pentatonic
+    Who  Whole tone scale - invert to get.. the other whole tone scale
+
+    Changing the scale does not alter the current SFX, it is only when drawing new notes with CTRL 
+    held down that the scale is applied.
 
 ====================================================================================================
  Exporters / Importers
@@ -1540,7 +1560,9 @@ For more details, or to find out about proper Lua, see www.lua.org.
 
         Draw a circle or filled circle at x,y with radius r
 
-        If r is negative, the circle is not drawn
+        If r is negative, the circle is not drawn.
+
+        When bits 0x1800.0000 are set in COL, and @0x5F34 & 2 == 2, the circle is drawn inverted.
 
 
     OVAL(X0, Y0, X1, Y1, [COL])
@@ -1738,15 +1760,16 @@ For more details, or to find out about proper Lua, see www.lua.org.
         The fill pattern can also be set by setting bits in any colour parameter (for example, the 
         parameter to @COLOR(), or the last parameter to @LINE(), @RECT() etc.
 
-            POKE(0x5F34, 1) -- sets integrated fillpattern + colour mode
+            POKE(0x5F34, 0x3) -- 0x1 enable fillpattern in high bits  0x2 enable inversion mode
             CIRCFILL(64,64,20, 0x114E.ABCD) -- sets fill pattern to ABCD
 
             When using the colour parameter to set the fill pattern, the following bits are used:
 
-            bit  0x1000.0000 means the non-colour bits should be observed
+            bit  0x1000.0000 this needs to be set: it means "observe bits 0xf00.ffff"
             bit  0x0100.0000 transparency
             bit  0x0200.0000 apply to sprites
-            bit  0x0400.0000 apply secondary palette
+            bit  0x0400.0000 apply secondary palette globally
+            bit  0x0800.0000 invert the drawing operation (circfill/ovalfill/rectfill)
             bits 0x00FF.0000 are the usual colour bits
             bits 0x0000.FFFF are interpreted as the fill pattern
 
@@ -2076,9 +2099,13 @@ For more details, or to find out about proper Lua, see www.lua.org.
         can only be contained inside the memory regions 0x1000..0x2fff, 0x8000..0xffff, and  the 
         map height is determined to be the largest possible size that fits in the given region.
 
+        GFX and SCREEN addresses can additionally be mapped to upper memory locations 0x80, 0xA0, 
+        0xC0, 0xE0,  with the constraint that MAP can not overlap with that address (in this case, 
+        the conflicting GFX and/or SCREEN mappings are kicked back to their default mapping).
+
         GFX and SCREEN memory mapping happens at a low level which also affects memory access 
         functions (peek, poke, memcpy). The 8k memory blocks starting at 0x0 and 0x6000 can be 
-        thought of as pointers  to a separate video ram, and settings the values at 0X5F54 and 
+        thought of as pointers  to a separate video ram, and setting the values at 0X5F54 and 
         0X5F56 alters those pointers.
 
 
@@ -2320,23 +2347,43 @@ For more details, or to find out about proper Lua, see www.lua.org.
 
     MENUITEM(INDEX, [LABEL], [CALLBACK])
 
-        Add an extra item to the pause menu
+        Add or update an item to the pause menu.
 
-        Index should be 1..5 and determines the order each menu item is displayed label should be a 
-        string up to 16 characters long callback is a function called when the item is selected by 
-        the users
+        INDEX should be 1..5 and determines the order each menu item is displayed.
 
-        When no label or function is supplied, the menu item is removed
+        LABEL should be a string up to 16 characters long
+
+        CALLBACK is a function called when the item is selected by the user. If the callback 
+        returns true, the pause menu remains open.
+
+        When no label or function is supplied, the menu item is removed.
 
         MENUITEM(1, "RESTART PUZZLE",
             FUNCTION() RESET_PUZZLE() SFX(10) END
         )
 
-        If the callback returns true, the pause menu remains open. The callback takes a single 
-        parameter that is a bitfield of L,R,X button presses
+        The callback takes a single argument that is a bitfield of L,R,X button presses.
 
         MENUITEM(1, "FOO", 
             FUNCTION(B) IF (B&1 > 0) THEN PRINTH("LEFT WAS PRESSED") END END
+        )
+
+        To filter button presses that are able to trigger the callback, a mask can be  supplied in 
+        bits 0xff00 of INDEX. For example, to disable L, R for a particular menu item, set bits 
+        0x300 in the index:
+
+        MENUITEM(2 | 0x300, "RESET PROGRESS",
+            FUNCTION() DSET(0,0) END
+        )
+
+        Menu items can be updated, added or removed from within callbacks:
+
+        MENUITEM(3, "SCREENSHAKE: OFF",
+            FUNCTION()
+                SCREENSHAKE = NOT SCREENSHAKE
+                MENUITEM(NIL, "SCREENSHAKE: "..(SCREENSHAKE AND "ON" OR "OFF"))
+                RETURN TRUE -- DON'T CLOSE
+            END
         )
 
 ----------------------------------------------------------------------------------------------------
@@ -2970,6 +3017,34 @@ For more information, please refer to the Lua 5.2 manual.
 	PICO-8 VERSION HISTORY
 --------------------------------------------------------------------------------------------
 
+	v0.2.6
+
+		Added: Custom waveform instruments
+		Added: Configurable scales in music editor (for using ctrl to snap to scale)
+		Added: Inverted draw operations
+		Added: Video and spritesheet memory addresses can be mapped to 0x8000, 0xa000, 0xc000, or 0xe000
+		Added: stat(111): same as stat(109) except on web where overfilling the audio buffer is recommended
+		Added: menuitem(0x300|index, ...) ignores left and right button presses. 0x7000 to ignore X/O/MENU.
+		Added: config.txt "capture_timestamps 1" to use timestamps as suffix in screen/video capture filenames
+		Added: (Mac) Universal binaries, also generated when exporting
+		Added: (Mac) Updated to SDL2 2.28.5 (-> minimum MacOS version is now 10.7)
+		Added: config.txt:flatten_joysticks to map n controllers to a player (e.g. to plug a gamepad into a handheld)
+		Added: config.txt:use_wget to use wget for downloads instead of libcurl (wget must be installed)
+		Added: SHUTDOWN PICO-8 from the options menu while running a cartridge in -splore mode
+		Added: Preserve window position and size when switching to and from fullscreen mode
+		Changed: ADD(TBL, X, NIL) now behaves the same as ADD(TBL, X) (used to produce an out of bounds error)
+		Improved: Moved internal globals out of top level to improve vm perf on carts with no _draw()
+		Improved: Boot time and memory usage reduced on low end machines
+		Fixed: 0x808 audio produces buzz on web browsers that mix at 48000MHz (ref: #rp8, #waterflakes)
+		Fixed: When bbs carts folder is inside root_path, favourited carts show up as local files without titles
+		Fixed: >><=, <<>= operators missing (from 0.2.5d)
+		Fixed: (from 0.2.5d) compound operators (a+=1) cost more than their expanded equivalents (a=a+1)
+		Fixed: cstore out of range when storing to self while running a bbs cart causes segfault
+		Fixed: tab complete on non-existant directory adds garbage to commandline
+		Fixed: can not navigate songs patterns with -/+ when pattern is empty
+		Fixed: backspace/del removing cart from favourites list even when inside the fold-out cartridge menu
+
+
 	v0.2.5g
 
 		Fixed: tonum("123abc") returns 123 (should return nothing) // also breaks split(). regression in 0.2.5f
@@ -3132,7 +3207,7 @@ For more information, please refer to the Lua 5.2 manual.
 		Changed: memset() faster than using peek4/poke4; now 2 cycles per byte at 8MHz (was 4)
 		Changed: "running at < 30fps" warning on boot now only for raspi builds, and w/ higher tolerance
 		Changed: Controller inputs are accepted even when PICO-8 is not the foreground application
-		Changed: Map can be located at 0x1000 .. 0x2f00 using poke(0x5f56, 0x11) .. poke(0x5f56,0x2f)
+		Changed: Map can be located at 0x1000 .. 0x2f00 using poke(0x5f56, 0x10) .. poke(0x5f56,0x2f)
 		Changed: Dotty text mode is now "\^=" ("Stripey") instead of "\^." // #gunayawuho #klax #impossible
 		Fixed: (not confirmed) crash causing 0-byte .p8 when audio mixer is called during save / run
 		Fixed: preprocessor not counting comments as white space; should allow: ".. end--[[]]if .."
